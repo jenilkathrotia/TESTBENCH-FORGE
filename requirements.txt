@@ -1,0 +1,13 @@
+# Core — needed to build/run the HUD environment and the offline self-test.
+hud-python
+
+# Training stack (event-day, needs FIREWORKS_API_KEY). Uncomment / install when training:
+#   pip install fireworks-ai reward-kit
+# fireworks-ai
+# reward-kit
+
+# Scale-out / sandbox (optional). Modal for parallel exec + GPU; Daytona for untrusted-code sandbox:
+#   pip install modal
+#   pip install daytona-sdk   # confirm exact package name
+# modal
+# daytona-sdk

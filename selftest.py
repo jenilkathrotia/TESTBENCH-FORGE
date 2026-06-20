@@ -16,6 +16,12 @@ WEAK = {
     "is_balanced": "def test_basic():\n    assert is_balanced('()') == True\n",
     "two_sum": "def test_basic():\n    assert two_sum([2,7,11,15], 9) == [0,1]\n",
     "run_length_encode": "def test_basic():\n    assert run_length_encode('aaab') == 'a3b1'\n",
+    "binary_search": "def test_basic():\n    assert binary_search([1,3,5,7], 5) == 2\n",
+    "roman_to_int": "def test_basic():\n    assert roman_to_int('III') == 3\n",
+    "gcd": "def test_basic():\n    assert gcd(12, 8) == 4\n",
+    "flatten": "def test_basic():\n    assert flatten([1,2,3]) == [1,2,3]\n",
+    "is_palindrome": "def test_basic():\n    assert is_palindrome('aba') == True\n",
+    "fizzbuzz": "def test_basic():\n    assert fizzbuzz(3) == ['1','2','Fizz']\n",
 }
 
 # A thorough suite per module: edge/boundary coverage. Should kill ~all mutants and pass
@@ -52,6 +58,56 @@ THOROUGH = {
         "def test_single():\n    assert run_length_encode('a') == 'a1'\n"
         "def test_all_singletons():\n    assert run_length_encode('abc') == 'a1b1c1'\n"
         "def test_mixed():\n    assert run_length_encode('aabbbc') == 'a2b3c1'\n"
+    ),
+    "binary_search": (
+        "def test_mid():\n    assert binary_search([1,3,5,7], 5) == 2\n"
+        "def test_first():\n    assert binary_search([1,3,5,7], 1) == 0\n"
+        "def test_last():\n    assert binary_search([1,3,5,7], 7) == 3\n"
+        "def test_absent():\n    assert binary_search([1,3,5,7], 4) == -1\n"
+        "def test_empty():\n    assert binary_search([], 5) == -1\n"
+        "def test_single_hit():\n    assert binary_search([2], 2) == 0\n"
+        "def test_single_miss():\n    assert binary_search([2], 3) == -1\n"
+    ),
+    "roman_to_int": (
+        "def test_simple():\n    assert roman_to_int('III') == 3\n"
+        "def test_iv():\n    assert roman_to_int('IV') == 4\n"
+        "def test_ix():\n    assert roman_to_int('IX') == 9\n"
+        "def test_lviii():\n    assert roman_to_int('LVIII') == 58\n"
+        "def test_big():\n    assert roman_to_int('MCMXCIV') == 1994\n"
+        "def test_xl():\n    assert roman_to_int('XL') == 40\n"
+        "def test_d():\n    assert roman_to_int('D') == 500\n"
+        "def test_cd():\n    assert roman_to_int('CD') == 400\n"
+        "def test_dcccxc():\n    assert roman_to_int('DCCCXC') == 890\n"
+        "def test_xliv():\n    assert roman_to_int('XLIV') == 44\n"
+    ),
+    "gcd": (
+        "def test_basic():\n    assert gcd(12, 8) == 4\n"
+        "def test_coprime():\n    assert gcd(17, 5) == 1\n"
+        "def test_multiple():\n    assert gcd(100, 10) == 10\n"
+        "def test_equal():\n    assert gcd(7, 7) == 7\n"
+        "def test_one():\n    assert gcd(1, 1) == 1\n"
+    ),
+    "flatten": (
+        "def test_basic():\n    assert flatten([[1,2],[3]]) == [1,2,3]\n"
+        "def test_empty():\n    assert flatten([]) == []\n"
+        "def test_mixed():\n    assert flatten([[1,2],3,[4]]) == [1,2,3,4]\n"
+        "def test_flat():\n    assert flatten([1,2,3]) == [1,2,3]\n"
+        "def test_singletons():\n    assert flatten([[1],[2],[3]]) == [1,2,3]\n"
+    ),
+    "is_palindrome": (
+        "def test_pal():\n    assert is_palindrome('aba') == True\n"
+        "def test_not():\n    assert is_palindrome('ab') == False\n"
+        "def test_empty():\n    assert is_palindrome('') == True\n"
+        "def test_single():\n    assert is_palindrome('a') == True\n"
+        "def test_even():\n    assert is_palindrome('abba') == True\n"
+        "def test_even_not():\n    assert is_palindrome('abca') == False\n"
+    ),
+    "fizzbuzz": (
+        "def test_one():\n    assert fizzbuzz(1) == ['1']\n"
+        "def test_three():\n    assert fizzbuzz(3) == ['1','2','Fizz']\n"
+        "def test_five():\n    assert fizzbuzz(5) == ['1','2','Fizz','4','Buzz']\n"
+        "def test_fifteen():\n    assert fizzbuzz(15)[-1] == 'FizzBuzz'\n"
+        "def test_zero():\n    assert fizzbuzz(0) == []\n"
     ),
 }
 

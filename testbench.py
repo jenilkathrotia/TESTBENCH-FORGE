@@ -21,6 +21,7 @@ import ast
 import copy
 import hashlib
 import json
+import os
 import random
 import subprocess
 import sys
@@ -77,8 +78,8 @@ print(json.dumps({"sig": sig}))
 '''
 
 
-def _run_suite_once(impl_src: str, suite_src: str, timeout: float = 4.0) -> bool:
-    """True iff the suite PASSES against this implementation."""
+def _run_suite_local(impl_src: str, suite_src: str, timeout: float = 4.0) -> bool:
+    """True iff the suite PASSES against this implementation (local subprocess)."""
     payload = json.dumps({"impl": impl_src, "suite": suite_src})
     try:
         proc = subprocess.run([sys.executable, "-c", _SUITE_RUNNER], input=payload,
@@ -92,6 +93,20 @@ def _run_suite_once(impl_src: str, suite_src: str, timeout: float = 4.0) -> bool
         return bool(json.loads(out[-1]).get("passed"))
     except Exception:
         return False
+
+
+def _run_suite_once(impl_src: str, suite_src: str, timeout: float = 4.0) -> bool:
+    """Run a suite against one implementation. Routes to a sandbox runner when
+    REWARDFORGE_RUNNER is set (daytona | modal); otherwise the local subprocess.
+    Both runners expose the same (impl, suite) -> bool interface."""
+    runner = os.environ.get("REWARDFORGE_RUNNER", "local")
+    if runner == "daytona":
+        import daytona_runner
+        return daytona_runner.run_suite_once(impl_src, suite_src, timeout)
+    if runner == "modal":
+        import modal_runner
+        return modal_runner.run_suite_once(impl_src, suite_src, timeout)
+    return _run_suite_local(impl_src, suite_src, timeout)
 
 
 def _eval_signature(impl_src: str, func: str, inputs: list, timeout: float = 4.0) -> list:
@@ -292,6 +307,183 @@ def _gen_rle(rng):
     return ("".join(rng.choice("abc") for _ in range(rng.randint(0, 8))),)
 
 
+# --- additional modules ----------------------------------------------------
+
+BSEARCH_REF = '''def binary_search(nums, target):
+    lo, hi = 0, len(nums) - 1
+    while lo <= hi:
+        mid = (lo + hi) // 2
+        if nums[mid] == target:
+            return mid
+        elif nums[mid] < target:
+            lo = mid + 1
+        else:
+            hi = mid - 1
+    return -1
+'''
+BSEARCH_EQUIV = '''def binary_search(nums, target):
+    left, right = 0, len(nums)
+    while left < right:
+        m = (left + right) // 2
+        if nums[m] == target:
+            return m
+        if nums[m] < target:
+            left = m + 1
+        else:
+            right = m
+    return -1
+'''
+BSEARCH_BUGS = ["def binary_search(nums, target):\n    return target in nums\n"]  # bool, not index
+
+
+ROMAN_REF = '''def roman_to_int(s):
+    vals = {'I': 1, 'V': 5, 'X': 10, 'L': 50, 'C': 100, 'D': 500, 'M': 1000}
+    total = 0
+    for i, ch in enumerate(s):
+        v = vals[ch]
+        if i + 1 < len(s) and v < vals[s[i + 1]]:
+            total -= v
+        else:
+            total += v
+    return total
+'''
+ROMAN_EQUIV = '''def roman_to_int(s):
+    vals = {'I': 1, 'V': 5, 'X': 10, 'L': 50, 'C': 100, 'D': 500, 'M': 1000}
+    total = 0
+    prev = 0
+    for ch in reversed(s):
+        v = vals[ch]
+        if v < prev:
+            total -= v
+        else:
+            total += v
+            prev = v
+    return total
+'''
+ROMAN_BUGS = [
+    "def roman_to_int(s):\n    vals={'I':1,'V':5,'X':10,'L':50,'C':100,'D':500,'M':1000}\n    return sum(vals[c] for c in s)\n",  # never subtracts
+]
+
+
+GCD_REF = '''def gcd(a, b):
+    while b:
+        a, b = b, a % b
+    return a
+'''
+GCD_EQUIV = '''def gcd(a, b):
+    while b != 0:
+        a, b = b, a % b
+    return abs(a)
+'''
+GCD_BUGS = ["def gcd(a, b):\n    while b:\n        a, b = b, a % b\n    return b\n"]  # returns 0
+
+
+FLAT_REF = '''def flatten(nested):
+    out = []
+    for x in nested:
+        if isinstance(x, list):
+            out.extend(x)
+        else:
+            out.append(x)
+    return out
+'''
+FLAT_EQUIV = '''def flatten(nested):
+    result = []
+    for item in nested:
+        if isinstance(item, list):
+            for y in item:
+                result.append(y)
+        else:
+            result.append(item)
+    return result
+'''
+FLAT_BUGS = ["def flatten(nested):\n    return list(nested)\n"]  # does not flatten sublists
+
+
+PAL_REF = '''def is_palindrome(s):
+    return s == s[::-1]
+'''
+PAL_EQUIV = '''def is_palindrome(s):
+    n = len(s)
+    for i in range(n // 2):
+        if s[i] != s[n - 1 - i]:
+            return False
+    return True
+'''
+PAL_BUGS = ["def is_palindrome(s):\n    return True\n"]  # always True
+
+
+FB_REF = '''def fizzbuzz(n):
+    out = []
+    for i in range(1, n + 1):
+        if i % 15 == 0:
+            out.append('FizzBuzz')
+        elif i % 3 == 0:
+            out.append('Fizz')
+        elif i % 5 == 0:
+            out.append('Buzz')
+        else:
+            out.append(str(i))
+    return out
+'''
+FB_EQUIV = '''def fizzbuzz(n):
+    res = []
+    for i in range(1, n + 1):
+        s = ''
+        if i % 3 == 0:
+            s += 'Fizz'
+        if i % 5 == 0:
+            s += 'Buzz'
+        res.append(s if s else str(i))
+    return res
+'''
+FB_BUGS = [
+    # checks 3 before 15 -> 15 never reached (i=15 yields 'Fizz')
+    "def fizzbuzz(n):\n    out=[]\n    for i in range(1, n+1):\n        if i%3==0:\n            out.append('Fizz')\n        elif i%5==0:\n            out.append('Buzz')\n        elif i%15==0:\n            out.append('FizzBuzz')\n        else:\n            out.append(str(i))\n    return out\n",
+]
+
+
+def _int_to_roman(n):
+    table = [(1000, 'M'), (900, 'CM'), (500, 'D'), (400, 'CD'), (100, 'C'), (90, 'XC'),
+             (50, 'L'), (40, 'XL'), (10, 'X'), (9, 'IX'), (5, 'V'), (4, 'IV'), (1, 'I')]
+    out = []
+    for val, sym in table:
+        while n >= val:
+            out.append(sym)
+            n -= val
+    return "".join(out)
+
+
+def _gen_bsearch(rng):
+    arr = sorted(rng.sample(range(0, 30), rng.randint(0, 8)))  # distinct + sorted
+    target = rng.choice(arr) if arr and rng.random() < 0.6 else rng.randint(0, 30)
+    return (arr, target)
+
+def _gen_roman(rng):
+    return (_int_to_roman(rng.randint(1, 3999)),)
+
+def _gen_gcd(rng):
+    return (rng.randint(1, 100), rng.randint(1, 100))
+
+def _gen_flatten(rng):
+    out = []
+    for _ in range(rng.randint(0, 4)):
+        if rng.random() < 0.5:
+            out.append([rng.randint(0, 9) for _ in range(rng.randint(0, 3))])
+        else:
+            out.append(rng.randint(0, 9))
+    return (out,)
+
+def _gen_pal(rng):
+    s = "".join(rng.choice("ab") for _ in range(rng.randint(0, 6)))
+    if rng.random() < 0.4:
+        s = s + s[::-1]
+    return (s,)
+
+def _gen_fizzbuzz(rng):
+    return (rng.randint(0, 20),)
+
+
 MODULES = {
     "merge_intervals": {
         "func": "merge_intervals",
@@ -320,6 +512,48 @@ MODULES = {
         "reference": RLE_REF, "equivalents": [RLE_EQUIV], "extra_mutants": RLE_BUGS,
         "gen": _gen_rle,
         "edges": [("",), ("a",), ("aaab",), ("abc",), ("aabbbc",)],
+    },
+    "binary_search": {
+        "func": "binary_search",
+        "description": "Return the index of target in a sorted list of DISTINCT integers, or -1 if absent.",
+        "reference": BSEARCH_REF, "equivalents": [BSEARCH_EQUIV], "extra_mutants": BSEARCH_BUGS,
+        "gen": _gen_bsearch,
+        "edges": [([], 5), ([2], 2), ([2], 3), ([1, 3, 5, 7], 5), ([1, 3, 5, 7], 1), ([1, 3, 5, 7], 7), ([1, 3, 5, 7], 4)],
+    },
+    "roman_to_int": {
+        "func": "roman_to_int",
+        "description": "Convert a Roman numeral string (I,V,X,L,C,D,M) to its integer value, honoring subtractive notation (IV=4, IX=9).",
+        "reference": ROMAN_REF, "equivalents": [ROMAN_EQUIV], "extra_mutants": ROMAN_BUGS,
+        "gen": _gen_roman,
+        "edges": [("III",), ("IV",), ("IX",), ("LVIII",), ("MCMXCIV",), ("XL",), ("XC",)],
+    },
+    "gcd": {
+        "func": "gcd",
+        "description": "Return the greatest common divisor of two positive integers a and b.",
+        "reference": GCD_REF, "equivalents": [GCD_EQUIV], "extra_mutants": GCD_BUGS,
+        "gen": _gen_gcd,
+        "edges": [(12, 8), (17, 5), (100, 10), (7, 7), (1, 1), (48, 36)],
+    },
+    "flatten": {
+        "func": "flatten",
+        "description": "Flatten a list ONE level: list elements are spread into the output, non-list elements kept as-is. flatten([[1,2],3,[4]]) -> [1,2,3,4].",
+        "reference": FLAT_REF, "equivalents": [FLAT_EQUIV], "extra_mutants": FLAT_BUGS,
+        "gen": _gen_flatten,
+        "edges": [([],), ([[1, 2], [3]],), ([1, 2, 3],), ([[1], [2], [3]],), ([[1, 2], 3, [4]],)],
+    },
+    "is_palindrome": {
+        "func": "is_palindrome",
+        "description": "Return True iff the string reads the same forwards and backwards (exact characters).",
+        "reference": PAL_REF, "equivalents": [PAL_EQUIV], "extra_mutants": PAL_BUGS,
+        "gen": _gen_pal,
+        "edges": [("",), ("a",), ("aa",), ("ab",), ("aba",), ("abba",), ("abca",)],
+    },
+    "fizzbuzz": {
+        "func": "fizzbuzz",
+        "description": "Return the list of FizzBuzz outputs for 1..n: 'Fizz' if divisible by 3, 'Buzz' if by 5, 'FizzBuzz' if by 15, else str(i).",
+        "reference": FB_REF, "equivalents": [FB_EQUIV], "extra_mutants": FB_BUGS,
+        "gen": _gen_fizzbuzz,
+        "edges": [(1,), (3,), (5,), (15,), (16,), (0,)],
     },
 }
 

@@ -23,13 +23,16 @@ Track fit: **Agentic Collaboration** (the pytest variant you present) with a **C
 
 | file | what | touched? |
 |---|---|---|
-| `testbench.py` | modules + reference impls, **AST mutation engine**, differential filter, suite runner, kill-rate scorer, prompt | the new core |
+| `testbench.py` | **10 modules** + reference impls, **AST mutation engine**, differential filter, suite-runner dispatch, kill-rate scorer, prompt | the new core |
 | `env.py` | HUD `forge_testbench` template + `run_tests` MCP tool (gate-only dry-run) | + template |
 | `reward.py` | **Fireworks reward-kit adapter** — wraps `score_suite` as an `@reward_function` (imports without the SDK via shims) | new |
 | `build_dataset.py` | emits `dataset.jsonl` (prompt + `ground_truth_for_eval.module_id`) for RFT | new |
 | `fireworks_baseline.py` | baseline / best-of-N runner via the Fireworks inference SDK | new |
+| `daytona_runner.py` | Daytona sandbox runner for untrusted code (`REWARDFORGE_RUNNER=daytona`) | new |
+| `modal_runner.py` | Modal parallel-scoring + GPU entrypoint (`REWARDFORGE_RUNNER=modal`) | new |
+| `demo.py` → `demo.html` | interactive bug-kill-meter dashboard ("Run RFT ▶" animates base→trained) | new |
 | `selftest.py` | proves weak→thorough kill-rate headroom + non-gameability, **no API key** | updated |
-| `tasks.py` | the 4 modules under test for `hud eval` | updated |
+| `tasks.py` | the 10 modules under test for `hud eval` | updated |
 | `scorer.py` | (legacy verifier scoring; unused by this task) | unchanged |
 
 ## Run it
@@ -37,29 +40,43 @@ Track fit: **Agentic Collaboration** (the pytest variant you present) with a **C
 ```bash
 cd rewardforge
 
-# 1. validate the signal — NO API key needed (~4s)
+# 1. validate the signal — NO API key needed
 ../.venv/bin/python selftest.py
-#    => weak suite mean 0.74 vs thorough 1.00; is_balanced 0.50 -> 1.00;
-#       assert-False => 0.0; thorough suite catches the bracket-type bug the weak one misses.
+#    => 10 modules, weak mean 0.62 vs thorough 1.00 (clean ceiling); assert-False => 0.0;
+#       thorough suite catches the bracket-type bug the weak one misses.
 
-# 2. keys
+# 2. build the demo dashboard (open demo.html — "Run RFT ▶" animates base->trained)
+../.venv/bin/python demo.py
+
+# 3. keys
 hud login                                # HUD_API_KEY -> ~/.hud/.env
 hud set ANTHROPIC_API_KEY=sk-ant-...
 
-# 3. baseline eval across the modules
+# 4. baseline eval across the modules
 hud eval tasks.py claude
+
+# (optional) execute untrusted code in a real sandbox instead of a local subprocess:
+#   export REWARDFORGE_RUNNER=daytona     # or: modal
 ```
 
 ## Validated numbers
 
 ```
-module             mutants  weak    thorough  headroom
-merge_intervals      18     0.778    1.000     +0.222
-is_balanced           4     0.500    1.000     +0.500   <- the hero demo module
-two_sum               4     0.750    1.000     +0.250
-run_length_encode    14     0.929    1.000     +0.071
-mean                        0.739    1.000
+module             mutants  weak    thorough
+roman_to_int         18     0.222    1.000
+binary_search        18     0.444    1.000
+is_balanced           4     0.500    1.000   <- hero demo module
+flatten               1     0.000    1.000
+two_sum               4     0.750    1.000
+is_palindrome         4     0.750    1.000
+merge_intervals      18     0.778    1.000
+fizzbuzz             18     0.833    1.000
+run_length_encode    14     0.929    1.000
+gcd                   1     1.000    1.000
+mean (10 modules)           0.621    1.000   <- the live RFT demo arc
 ```
+Every module reaches a clean **1.000** ceiling (all mutants killable); `assert False` and
+no-test suites score **0.0** (fail the reference gate).
 
 ## Training (Fireworks RFT/GRPO)
 

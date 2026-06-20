@@ -20,6 +20,7 @@ Run an agent over the env:        hud eval tasks.py claude
 Single local smoke test:          .venv/bin/python env.py
 """
 import asyncio
+import socket
 
 from hud.environment import Environment
 from hud.capabilities import Capability
@@ -71,12 +72,22 @@ async def run_tests(module_id: str, suite_code: str) -> dict:
     return {"passes_gate": gate, "module": module_id}
 
 
+def _free_port() -> int:
+    s = socket.socket()
+    s.bind(("127.0.0.1", 0))
+    port = s.getsockname()[1]
+    s.close()
+    return port
+
+
 @env.initialize
 async def _start():
-    # Stand up the tool server and publish it as an MCP capability the agent can use.
-    asyncio.create_task(server.run_http_async(host="127.0.0.1", port=8765))
+    # Stand up the tool server on a free port and publish it as an MCP capability.
+    # (A fixed port collides under concurrent `hud eval` / `hud deploy` rollouts.)
+    port = _free_port()
+    asyncio.create_task(server.run_http_async(host="127.0.0.1", port=port))
     await asyncio.sleep(0.3)  # let it bind
-    env.add_capability(Capability.mcp(name="tools", url="http://127.0.0.1:8765/mcp"))
+    env.add_capability(Capability.mcp(name="tools", url=f"http://127.0.0.1:{port}/mcp"))
 
 
 # =============================================================================

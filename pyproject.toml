@@ -2,7 +2,21 @@
 name = "rewardforge"
 version = "0.1.0"
 requires-python = ">=3.11"
-dependencies = ["hud-python"]
+dependencies = [
+    "hud-python",
+]
+
+[project.optional-dependencies]
+# Event-day training stack (needs FIREWORKS_API_KEY): pip install ".[train]"
+train = [
+    "fireworks-ai",
+    "reward-kit",
+]
+# Sandbox / scale-out (optional): pip install ".[sandbox]"
+sandbox = [
+    "modal",
+    # Daytona Python SDK — confirm the exact package name at install time (daytona-sdk / daytona)
+]
 
 [tool.uv]
 package = false
