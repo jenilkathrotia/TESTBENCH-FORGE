@@ -38,15 +38,16 @@ Track fit: **Agentic Collaboration** (the pytest variant you present) with a **C
 ## Run it
 
 ```bash
-cd rewardforge
+cd ~/Downloads/YC---RL-Gym          # the project's own folder (outside JaanHealth)
+source .venv/bin/activate           # turn on the project's tools
 
 # 1. validate the signal — NO API key needed
-../.venv/bin/python selftest.py
+.venv/bin/python selftest.py
 #    => 10 modules, weak mean 0.62 vs thorough 1.00 (clean ceiling); assert-False => 0.0;
 #       thorough suite catches the bracket-type bug the weak one misses.
 
 # 2. build the demo dashboard (open demo.html — "Run RFT ▶" animates base->trained)
-../.venv/bin/python demo.py
+.venv/bin/python demo.py
 
 # 3. keys
 hud login                                # HUD_API_KEY -> ~/.hud/.env
@@ -87,10 +88,10 @@ pip install fireworks-ai reward-kit         # into the venv
 export FIREWORKS_API_KEY=fw-...
 
 # 1. baseline ("before" number) with the inference SDK — also the best-of-N fallback
-../.venv/bin/python fireworks_baseline.py            # BEST_OF_N=4 for best-of-N
+.venv/bin/python fireworks_baseline.py            # BEST_OF_N=4 for best-of-N
 
 # 2. build the RFT dataset (prompt + ground_truth_for_eval.module_id)
-../.venv/bin/python build_dataset.py                 # -> dataset.jsonl
+.venv/bin/python build_dataset.py                 # -> dataset.jsonl
 
 # 3. sanity-check the reward locally, then deploy it
 reward-kit preview --metrics-folders "kill=." --samples dataset.jsonl
