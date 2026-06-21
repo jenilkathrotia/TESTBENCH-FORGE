@@ -719,10 +719,19 @@ def get_mutant_pool(module_id: str) -> list:
 # under test may be imported; every escape primitive (eval/exec/getattr-class names) and every
 # dunder attribute is rejected; literal frame attrs are denied too. Defense-in-depth: the
 # runner also deletes the impl source before the suite runs (frame isolation).
-_ALLOWED_IMPORTS = {"pytest", "solution"}
+_ALLOWED_IMPORTS = {"pytest", "solution", "__future__"}
 # benign dunder *names* a suite may legitimately mention (e.g. `if __name__ == "__main__"`);
 # everything else dunder is an escape gadget.
 _ALLOWED_DUNDER_NAMES = {"__name__", "__doc__", "__file__", "__spec__", "__loader__", "__package__"}
+# benign dunder *methods* a suite may define on a helper class; everything else dunder def
+# (e.g. __del__ finalizer, __init_subclass__ / __set_name__ hooks) runs code outside the
+# normal test flow — including AFTER the verdict is emitted — so it is rejected.
+_ALLOWED_DUNDER_METHODS = {
+    "__init__", "__eq__", "__ne__", "__hash__", "__repr__", "__str__", "__bool__",
+    "__lt__", "__le__", "__gt__", "__ge__", "__len__", "__iter__", "__next__",
+    "__contains__", "__getitem__", "__setitem__", "__call__", "__enter__", "__exit__",
+    "__add__", "__sub__", "__mul__",
+}
 _DENY_NAMES = {
     "eval", "exec", "compile", "open", "__import__", "globals", "locals", "vars", "dir",
     "getattr", "setattr", "delattr", "input", "breakpoint", "memoryview",
@@ -757,6 +766,13 @@ def _suite_security_violation(suite_src: str) -> str | None:
         elif isinstance(node, ast.Attribute):
             if (node.attr.startswith("__") and node.attr.endswith("__")) or node.attr in _DENY_ATTRS:
                 return "attr:" + node.attr
+        elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            nm = node.name  # the def/class NAME isn't a Name node; scan it so `def __del__` (a
+            if nm.startswith("__") and nm.endswith("__") and nm not in _ALLOWED_DUNDER_METHODS:
+                return "def-name:" + nm  # finalizer that runs after the verdict) can't slip through
+        elif isinstance(node, ast.arg):
+            if node.arg.startswith("__") and node.arg.endswith("__"):
+                return "arg-name:" + node.arg
     return None
 
 

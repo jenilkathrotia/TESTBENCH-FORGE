@@ -52,6 +52,13 @@ ATTACKS = {
         "import testbench\n"
         "def test_x():\n"
         "    assert testbench.MODULES['binary_search']['reference']\n",
+    "class __del__ finalizer (prints a verdict AFTER _emit)":
+        "class C:\n"
+        "    def __del__(self):\n"
+        "        print('{\"passed\": true, \"n\": 1}')\n"
+        "_c = C()\n"
+        "def test_x():\n"
+        "    assert True\n",
     "eval an expression":
         "def test_x():\n"
         "    assert eval('1+1') == 2\n",
@@ -72,13 +79,20 @@ def main():
         reason = info.get("reason", info.get("detail", info))
         print(f"  [{'PASS' if good else 'FAIL'}]  {rate:5.3f}   {name:42s}  ({reason})")
 
-    # a legitimate thorough suite MUST be unaffected by the hardening
+    # legitimate suites MUST be unaffected by the hardening (no false-positives)
     legit = selftest.THOROUGH[MOD]
     grate, ginfo = testbench.score_suite(MOD, legit)
     legit_ok = grate > 0.0
     ok &= legit_ok
     print(f"\n  [{'PASS' if legit_ok else 'FAIL'}]  {grate:5.3f}   "
           f"{'legitimate thorough suite (must stay > 0)':42s}  ({ginfo.get('reason', 'scored')})")
+
+    # a legit suite that opens with `from __future__ import annotations` must NOT be flagged
+    frate, finfo = testbench.score_suite(MOD, "from __future__ import annotations\n" + legit)
+    future_ok = frate > 0.0
+    ok &= future_ok
+    print(f"  [{'PASS' if future_ok else 'FAIL'}]  {frate:5.3f}   "
+          f"{'thorough suite + __future__ import (must stay > 0)':42s}  ({finfo.get('reason', 'scored')})")
 
     print("\nRESULT:", "ALL ATTACKS NEUTRALIZED, legit suite intact ✓" if ok
           else "AN ATTACK SUCCEEDED OR A LEGIT SUITE BROKE ✗")
