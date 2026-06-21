@@ -43,7 +43,8 @@ class RunnerHardeningChecks(unittest.TestCase):
         self.assertEqual(score, 0.0)
         self.assertFalse(info.get("gate"))
         self.assertTrue(info.get("security_violation"))
-        self.assertIn("forbidden", info.get("reason", ""))
+        self.assertEqual(info.get("reason"), "security_violation")
+        self.assertIn("import", info.get("detail", ""))
 
     def test_import_testbench_oracle_scores_zero(self):
         suite = (
@@ -59,7 +60,8 @@ class RunnerHardeningChecks(unittest.TestCase):
         self.assertEqual(score, 0.0)
         self.assertFalse(info.get("gate"))
         self.assertTrue(info.get("security_violation"))
-        self.assertIn("forbidden import: testbench", info.get("reason", ""))
+        self.assertEqual(info.get("reason"), "security_violation")
+        self.assertIn("testbench", info.get("detail", ""))
 
     def test_benign_name_main_guard_can_pass_gate(self):
         suite = (

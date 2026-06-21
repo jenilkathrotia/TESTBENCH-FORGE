@@ -33,20 +33,33 @@ import sys
 _SUITE_RUNNER = r'''
 import json, sys, types, contextlib, os
 d = json.loads(sys.stdin.read())
-_nonce = d.get("nonce")
+_nonce = d.get("nonce", "")
+_SUITE_SRC = d["suite"]
 _json_dumps = json.dumps
 _os_write = os.write
 _stdout_fd = sys.stdout.fileno()
 
 def _emit(obj):
+    # the parent trusts ONLY the verdict line carrying this per-call nonce, so an
+    # untrusted suite that prints a forged {"passed": true} ledger is ignored.
     obj["nonce"] = _nonce
     _os_write(_stdout_fd, (_json_dumps(obj, sort_keys=True) + "\n").encode())
 
-ns = {"__name__": "__testbench_suite__"}
+ns = {
+    "__name__": "__testbench_suite__",
+    "__doc__": None,
+    "__file__": "<testbench-suite>",
+    "__spec__": None,
+    "__loader__": None,
+    "__package__": None,
+}
 try:
     exec(d["impl"], ns)
 except BaseException:
     pass  # tests calling the (now-undefined) function will fail -> mutant killed
+del d  # FRAME ISOLATION: the impl/mutant source now lives only as a function object in ns.
+       # A suite that walks the call stack (f_back -> f_globals) finds no source text to
+       # build a pass-iff-reference oracle. This is the real defense; the AST guard is a sieve.
 
 # Agents habitually write `from <fn> import <fn>` / `from solution import <fn>` and
 # `import pytest`. Make the impl's functions importable and stub pytest so those habits
@@ -88,11 +101,11 @@ try:
         _pt.mark = types.SimpleNamespace(parametrize=lambda *a, **k: (lambda f: f),
                                          skip=_noop, skipif=lambda *a, **k: (lambda f: f))
         sys.modules["pytest"] = _pt
-except BaseException:
+except Exception:
     pass
 
 try:
-    exec(d["suite"], ns)
+    exec(_SUITE_SRC, ns)
 except BaseException as e:
     _emit({"passed": False, "valid": False, "reason": type(e).__name__,
            "security_violation": type(e).__name__ in ("SystemExit", "KeyboardInterrupt", "GeneratorExit"),
@@ -666,58 +679,6 @@ MODULES = {
 
 _POOL_CACHE: dict[str, list] = {}
 MAX_MUTANTS = 18
-_FORBIDDEN_IMPORTS = {
-    "inspect", "testbench", "os", "sys", "subprocess", "builtins", "importlib",
-    "pathlib", "runpy", "types",
-}
-_FORBIDDEN_NAMES = {
-    "eval", "exec", "compile", "open", "globals", "locals", "vars", "dir",
-    "getattr", "setattr", "delattr", "__import__",
-}
-_FORBIDDEN_ATTRS = {
-    "currentframe", "_getframe", "f_back", "f_globals", "f_locals", "gi_frame",
-    "cr_frame", "tb_frame", "__globals__", "__builtins__", "__subclasses__",
-    "__mro__", "__class__", "__dict__",
-}
-_ALLOWED_DUNDER_NAMES = {"__name__", "__doc__", "__module__"}
-_ALLOWED_DUNDER_ATTRS = {"__name__", "__doc__", "__module__"}
-
-
-def _suite_security_violation(suite_src: str) -> str | None:
-    try:
-        tree = ast.parse(suite_src)
-    except SyntaxError:
-        return None
-    allowed_imports = {"pytest", "solution"} | {m["func"] for m in MODULES.values()}
-    for node in ast.walk(tree):
-        if isinstance(node, ast.Import):
-            for alias in node.names:
-                root = alias.name.split(".", 1)[0]
-                if root not in allowed_imports:
-                    return f"forbidden import: {root}"
-        elif isinstance(node, ast.ImportFrom):
-            root = (node.module or "").split(".", 1)[0]
-            if root not in allowed_imports:
-                return f"forbidden import: {root or '<relative>'}"
-        elif isinstance(node, ast.Name):
-            if node.id in _FORBIDDEN_NAMES:
-                return f"forbidden name: {node.id}"
-            if (
-                node.id.startswith("__")
-                and node.id.endswith("__")
-                and node.id not in _ALLOWED_DUNDER_NAMES
-            ):
-                return f"forbidden name: {node.id}"
-        elif isinstance(node, ast.Attribute):
-            if node.attr in _FORBIDDEN_ATTRS:
-                return f"forbidden attribute: {node.attr}"
-            if (
-                node.attr.startswith("__")
-                and node.attr.endswith("__")
-                and node.attr not in _ALLOWED_DUNDER_ATTRS
-            ):
-                return f"forbidden attribute: {node.attr}"
-    return None
 
 
 def _filter_inputs(module_id: str):
@@ -751,18 +712,67 @@ def get_mutant_pool(module_id: str) -> list:
     return pool
 
 
+# A test suite is UNTRUSTED code. Imports are ALLOWLISTED, not denylisted — a denylist is a
+# sieve: `operator.attrgetter("f_back")` walks the call stack with the attribute name as a
+# runtime string the AST never sees, reads the hidden reference out of the harness frame, and
+# fakes a perfect score (confirmed by red-team). So only pytest / solution / the function
+# under test may be imported; every escape primitive (eval/exec/getattr-class names) and every
+# dunder attribute is rejected; literal frame attrs are denied too. Defense-in-depth: the
+# runner also deletes the impl source before the suite runs (frame isolation).
+_ALLOWED_IMPORTS = {"pytest", "solution"}
+# benign dunder *names* a suite may legitimately mention (e.g. `if __name__ == "__main__"`);
+# everything else dunder is an escape gadget.
+_ALLOWED_DUNDER_NAMES = {"__name__", "__doc__", "__file__", "__spec__", "__loader__", "__package__"}
+_DENY_NAMES = {
+    "eval", "exec", "compile", "open", "__import__", "globals", "locals", "vars", "dir",
+    "getattr", "setattr", "delattr", "input", "breakpoint", "memoryview",
+}
+_DENY_ATTRS = {  # non-dunder frame/introspection attrs (all dunder attrs are blocked wholesale)
+    "f_back", "f_globals", "f_locals", "f_builtins", "f_code", "gi_frame", "cr_frame",
+    "ag_frame", "tb_frame", "tb_next", "_getframe", "currentframe", "mro",
+}
+
+
+def _suite_security_violation(suite_src: str) -> str | None:
+    """Reason string if the suite tries to escape the sandbox / read hidden state / forge
+    the verdict; None if it looks like an ordinary test suite. Cheating scores 0 — the only
+    way to score is to write tests that actually catch bugs."""
+    try:
+        tree = ast.parse(suite_src)
+    except SyntaxError:
+        return None  # unparseable -> it just fails the gate -> 0 anyway
+    allowed = _ALLOWED_IMPORTS | {m["func"] for m in MODULES.values()}
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for a in node.names:
+                if a.name.split(".")[0] not in allowed:
+                    return "import:" + a.name
+        elif isinstance(node, ast.ImportFrom):
+            if (node.module or "").split(".")[0] not in allowed:
+                return "import-from:" + (node.module or "<relative>")
+        elif isinstance(node, ast.Name):
+            dunder = node.id.startswith("__") and node.id.endswith("__")
+            if node.id in _DENY_NAMES or (dunder and node.id not in _ALLOWED_DUNDER_NAMES):
+                return "name:" + node.id
+        elif isinstance(node, ast.Attribute):
+            if (node.attr.startswith("__") and node.attr.endswith("__")) or node.attr in _DENY_ATTRS:
+                return "attr:" + node.attr
+    return None
+
+
 def score_suite(module_id: str, suite_src: str):
     """Reward = (#mutants killed / #mutants) gated by passing reference + equivalents."""
-    m = MODULES[module_id]
-    violation = _suite_security_violation(suite_src)
-    if violation:
+    viol = _suite_security_violation(suite_src)
+    if viol:  # untrusted suite tried to escape / read hidden state / forge the verdict
         return 0.0, {
             "gate": False,
-            "reason": violation,
+            "reason": "security_violation",
+            "detail": viol,
             "gate_failed_on": "security_preflight",
             "security_violation": True,
             "valid": False,
         }
+    m = MODULES[module_id]
     gate_impls = [m["reference"]] + m["equivalents"]
     for idx, impl in enumerate(gate_impls):
         label = "reference" if idx == 0 else f"equivalent_{idx - 1}"
