@@ -42,7 +42,7 @@ def _emit(obj):
     obj["nonce"] = _nonce
     _os_write(_stdout_fd, (_json_dumps(obj, sort_keys=True) + "\n").encode())
 
-ns = {}
+ns = {"__name__": "__testbench_suite__"}
 try:
     exec(d["impl"], ns)
 except BaseException:
@@ -679,6 +679,8 @@ _FORBIDDEN_ATTRS = {
     "cr_frame", "tb_frame", "__globals__", "__builtins__", "__subclasses__",
     "__mro__", "__class__", "__dict__",
 }
+_ALLOWED_DUNDER_NAMES = {"__name__", "__doc__", "__module__"}
+_ALLOWED_DUNDER_ATTRS = {"__name__", "__doc__", "__module__"}
 
 
 def _suite_security_violation(suite_src: str) -> str | None:
@@ -698,10 +700,22 @@ def _suite_security_violation(suite_src: str) -> str | None:
             if root not in allowed_imports:
                 return f"forbidden import: {root or '<relative>'}"
         elif isinstance(node, ast.Name):
-            if node.id in _FORBIDDEN_NAMES or (node.id.startswith("__") and node.id.endswith("__")):
+            if node.id in _FORBIDDEN_NAMES:
+                return f"forbidden name: {node.id}"
+            if (
+                node.id.startswith("__")
+                and node.id.endswith("__")
+                and node.id not in _ALLOWED_DUNDER_NAMES
+            ):
                 return f"forbidden name: {node.id}"
         elif isinstance(node, ast.Attribute):
-            if node.attr in _FORBIDDEN_ATTRS or (node.attr.startswith("__") and node.attr.endswith("__")):
+            if node.attr in _FORBIDDEN_ATTRS:
+                return f"forbidden attribute: {node.attr}"
+            if (
+                node.attr.startswith("__")
+                and node.attr.endswith("__")
+                and node.attr not in _ALLOWED_DUNDER_ATTRS
+            ):
                 return f"forbidden attribute: {node.attr}"
     return None
 

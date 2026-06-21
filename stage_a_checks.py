@@ -45,6 +45,35 @@ class RunnerHardeningChecks(unittest.TestCase):
         self.assertTrue(info.get("security_violation"))
         self.assertIn("forbidden", info.get("reason", ""))
 
+    def test_import_testbench_oracle_scores_zero(self):
+        suite = (
+            "import testbench\n"
+            "def test_cheat():\n"
+            "    ref = testbench.MODULES['merge_intervals']['reference']\n"
+            "    sig = testbench._eval_signature(ref, 'merge_intervals', [[[1, 2]]])\n"
+            "    assert sig\n"
+        )
+
+        score, info = testbench.score_suite("merge_intervals", suite)
+
+        self.assertEqual(score, 0.0)
+        self.assertFalse(info.get("gate"))
+        self.assertTrue(info.get("security_violation"))
+        self.assertIn("forbidden import: testbench", info.get("reason", ""))
+
+    def test_benign_name_main_guard_can_pass_gate(self):
+        suite = (
+            "def test_basic_merge():\n"
+            "    assert merge_intervals([[1, 2]]) == [[1, 2]]\n"
+            "\n"
+            "if __name__ == '__main__':\n"
+            "    pass\n"
+        )
+
+        _, info = testbench.score_suite("merge_intervals", suite)
+
+        self.assertTrue(info.get("gate"), info)
+
     def test_assert_true_still_has_zero_reward(self):
         suite = "def test_noop():\n    assert True\n"
 

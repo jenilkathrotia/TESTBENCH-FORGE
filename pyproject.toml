@@ -10,12 +10,12 @@ dependencies = [
 # Event-day training stack (needs FIREWORKS_API_KEY): pip install ".[train]"
 train = [
     "fireworks-ai",
-    "reward-kit",
+    "eval-protocol",
 ]
 # Sandbox / scale-out (optional): pip install ".[sandbox]"
 sandbox = [
     "modal",
-    # Daytona Python SDK — confirm the exact package name at install time (daytona-sdk / daytona)
+    # Daytona Python SDK: confirm the exact package name at install time (daytona-sdk / daytona)
 ]
 
 [tool.uv]
