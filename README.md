@@ -118,7 +118,15 @@ flowchart TD
 
 ## Run it
 
-A judge can verify the whole signal with **system `python3` — no venv, no pip install, no API key, no GPU:**
+**The interactive demo UI** (our frontend, Vite + React + framer-motion) launches with one command from the repo root:
+
+```bash
+./run.sh                     # installs deps on first run, then serves the demo at http://localhost:5173
+```
+
+Walk the hero + three beats (honest oracle · we broke our own reward · it generalizes) with `→` / `space`; source lives in `web/`.
+
+A judge can also verify the whole signal directly with **system `python3` — no venv, no pip install, no API key, no GPU:**
 
 ```bash
 git clone https://github.com/jenilkathrotia/YC---RL-Gym && cd YC---RL-Gym
@@ -161,7 +169,7 @@ Every module reaches a clean **1.000** ceiling (all mutants killable); `assert F
 | Full judge-facing writeup | [`SUBMISSION.md`](SUBMISSION.md) |
 | Literal base → trained suites (witnessed, not illustrative) | [`demo_suites.html`](demo_suites.html) |
 | Training curve + health + honest caveats | [`TRAINING_STATS.md`](TRAINING_STATS.md) |
-| Bug-kill-meter dashboard | [`demo.html`](demo.html) |
+| **Interactive demo UI** (hero + 3 beats, Vite/React) | `./run.sh` → http://localhost:5173 (`web/`) |
 | Demo video | Coming soon |
 
 ## Files
@@ -176,5 +184,6 @@ Every module reaches a clean **1.000** ceiling (all mutants killable); `assert F
 | `daytona_runner.py` · `modal_runner.py` | Sandbox runners for executing untrusted code (`REWARDFORGE_RUNNER=daytona` / `modal`) |
 | `fireworks_baseline.py` · `build_dataset.py` | Raw baseline / best-of-N runner; emits `dataset.jsonl` for RFT |
 | `selftest.py` | Proves weak→thorough kill-rate headroom + non-gameability, **no API key** |
-| `demo.py` → `demo.html` · `demo_suites.py` → `demo_suites.html` | Bug-kill-meter dashboard; renders the literal witnessed base→trained suites side by side |
+| `web/` + `run.sh` | **Interactive demo frontend** (Vite + React + framer-motion): hero + 3 beats; `./run.sh` serves it on localhost |
+| `demo_suites.py` → `demo_suites.html` | Renders the literal witnessed base→trained suites side by side |
 | `tasks.py` | The 10 modules under test for `hud eval` |
