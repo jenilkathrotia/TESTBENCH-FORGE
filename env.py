@@ -20,6 +20,7 @@ Run an agent over the env:        hud eval tasks.py claude
 Single local smoke test:          .venv/bin/python env.py
 """
 import asyncio
+import os
 import socket
 
 from hud.environment import Environment
@@ -82,9 +83,13 @@ def _free_port() -> int:
 
 @env.initialize
 async def _start():
-    # Stand up the tool server on a free port and publish it as an MCP capability.
-    # (A fixed port collides under concurrent `hud eval` / `hud deploy` rollouts.)
-    port = _free_port()
+    # Tools are OFF by default so the agent simply replies with the test suite as text
+    # (matches the known-good HUD scaffold and avoids the agent ending on a tool call with
+    # no final answer). Opt in with REWARDFORGE_TOOLS=1 to expose the test_verifier /
+    # test_solver / run_tests MCP tools for tool-using agents.
+    if os.environ.get("REWARDFORGE_TOOLS") != "1":
+        return
+    port = _free_port()  # fixed ports collide under concurrent hud eval / hud deploy
     asyncio.create_task(server.run_http_async(host="127.0.0.1", port=port))
     await asyncio.sleep(0.3)  # let it bind
     env.add_capability(Capability.mcp(name="tools", url=f"http://127.0.0.1:{port}/mcp"))

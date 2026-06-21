@@ -31,13 +31,57 @@ import sys
 # ---------------------------------------------------------------------------
 
 _SUITE_RUNNER = r'''
-import json, sys
+import json, sys, types, contextlib
 d = json.loads(sys.stdin.read())
 ns = {}
 try:
     exec(d["impl"], ns)
 except Exception:
     pass  # tests calling the (now-undefined) function will fail -> mutant killed
+
+# Agents habitually write `from <fn> import <fn>` / `from solution import <fn>` and
+# `import pytest`. Make the impl's functions importable and stub pytest so those habits
+# don't crash the gate (the reward should reflect TEST QUALITY, not import style).
+try:
+    _defined = {k: v for k, v in list(ns.items()) if callable(v) and not k.startswith("__")}
+    _sol = types.ModuleType("solution")
+    for _k, _v in _defined.items():
+        setattr(_sol, _k, _v)
+    sys.modules["solution"] = _sol
+    for _k in _defined:
+        _m = types.ModuleType(_k)
+        for _k2, _v2 in _defined.items():
+            setattr(_m, _k2, _v2)
+        sys.modules[_k] = _m
+    try:
+        import pytest  # noqa: F401
+    except Exception:
+        _pt = types.ModuleType("pytest")
+        @contextlib.contextmanager
+        def _raises(exc=Exception, *a, **k):
+            try:
+                yield
+            except exc:
+                return
+            raise AssertionError("DID NOT RAISE")
+        class _Approx:
+            def __init__(self, v, rel=1e-6, abs=1e-9):
+                self.v, self.rel, self.abs = v, rel, abs
+            def __eq__(self, o):
+                try:
+                    return abs(o - self.v) <= max(self.abs, self.rel * max(abs(o), abs(self.v)))
+                except Exception:
+                    return o == self.v
+        _noop = lambda *a, **k: (a[0] if (a and callable(a[0])) else (lambda f: f))
+        _pt.raises = _raises
+        _pt.approx = lambda v, rel=1e-6, abs=1e-9: _Approx(v, rel, abs)
+        _pt.fixture = _noop
+        _pt.mark = types.SimpleNamespace(parametrize=lambda *a, **k: (lambda f: f),
+                                         skip=_noop, skipif=lambda *a, **k: (lambda f: f))
+        sys.modules["pytest"] = _pt
+except Exception:
+    pass
+
 try:
     exec(d["suite"], ns)
 except Exception:
@@ -622,6 +666,9 @@ the reference) that it CATCHES (a test fails on the buggy version). So probe edg
 boundaries, and adversarial inputs — not just the happy path.
 
 Hard rules:
+  - `{func}` is ALREADY defined and in scope — call it directly. Do NOT import it
+    (no `from ... import {func}`) and do NOT `import pytest`. Write plain top-level
+    functions: `def test_x():` with `assert ...`. No fixtures, no parametrize.
   - Your suite MUST pass on the correct reference AND on behavior-equivalent refactors. A
     suite that fails the reference (e.g. `assert False`, or tests tied to internal details)
     scores 0.
