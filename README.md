@@ -120,6 +120,8 @@ flowchart TD
 
 **The interactive demo UI** (our frontend, Vite + React + framer-motion) launches with one command from the repo root:
 
+Live: **https://testbench-forge-demo.vercel.app**
+
 ```bash
 ./run.sh                     # installs deps on first run, then serves the demo at http://localhost:5173
 ```
@@ -168,7 +170,7 @@ Every module reaches a clean **1.000** ceiling (all mutants killable); `assert F
 | --- | --- |
 | Full judge-facing writeup | [`SUBMISSION.md`](SUBMISSION.md) |
 | Training curve + health + honest caveats | [`TRAINING_STATS.md`](TRAINING_STATS.md) |
-| **Interactive demo UI** (hero + 3 beats incl. witnessed base→trained suites, Vite/React) | `./run.sh` → http://localhost:5173 (`web/`) |
+| **Interactive demo UI** (hero + 3 beats incl. witnessed base→trained suites, Vite/React) | [Open live demo](https://testbench-forge-demo.vercel.app) · local: `./run.sh` → http://localhost:5173 (`web/`) |
 | Demo video | [Watch the demo ▶](https://drive.google.com/drive/folders/1q8e4c0hSHDC1mbj2esfd8kbf20eLLJEQ?dmr=1&ec=wgc-drive-%5Bmodule%5D-goto) |
 
 ## Files
