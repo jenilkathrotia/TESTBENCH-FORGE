@@ -1,12 +1,364 @@
 {
-  "run": "Modal A100-80GB GRPO (TRL GRPOTrainer, LoRA)",
   "model": "Qwen/Qwen2.5-3B-Instruct",
-  "reward": "hidden-mutant kill rate (TestBench-Forge env)",
-  "steps": 80,
-  "num_generations": 6,
-  "reward_first10_mean": 0.233,
-  "reward_last10_mean": 0.750,
-  "block_means": {"steps_1_20": 0.354, "steps_21_40": 0.580, "steps_41_60": 0.732, "steps_61_80": 0.766},
-  "first": 0.17, "last": 0.67, "best": 1.0,
-  "summary": "Qwen2.5-3B learned to write bug-catching test suites via GRPO: mean mutant-kill reward climbed 0.23 -> 0.77 over 80 steps on a single A100."
+  "train_modules": [
+    "merge_intervals",
+    "two_sum",
+    "run_length_encode",
+    "gcd",
+    "flatten",
+    "is_palindrome",
+    "fizzbuzz"
+  ],
+  "held_out": [
+    "is_balanced",
+    "binary_search",
+    "roman_to_int"
+  ],
+  "before": {
+    "merge_intervals": 0.2,
+    "is_balanced": 0.75,
+    "two_sum": 0.0,
+    "run_length_encode": 0.2,
+    "binary_search": 0.389,
+    "roman_to_int": 0.0,
+    "gcd": 0.0,
+    "flatten": 0.0,
+    "is_palindrome": 0.2,
+    "fizzbuzz": 0.2
+  },
+  "after": {
+    "merge_intervals": 0.8,
+    "is_balanced": 0.8,
+    "two_sum": 0.6,
+    "run_length_encode": 1.0,
+    "binary_search": 1.0,
+    "roman_to_int": 0.511,
+    "gcd": 1.0,
+    "flatten": 1.0,
+    "is_palindrome": 1.0,
+    "fizzbuzz": 1.0
+  },
+  "curve": [
+    {
+      "step": 1,
+      "reward": 0.1666666716337204
+    },
+    {
+      "step": 2,
+      "reward": 0.0
+    },
+    {
+      "step": 3,
+      "reward": 0.0
+    },
+    {
+      "step": 4,
+      "reward": 0.0
+    },
+    {
+      "step": 5,
+      "reward": 0.15740740299224854
+    },
+    {
+      "step": 6,
+      "reward": 0.1666666716337204
+    },
+    {
+      "step": 7,
+      "reward": 0.3333333432674408
+    },
+    {
+      "step": 8,
+      "reward": 0.5
+    },
+    {
+      "step": 9,
+      "reward": 0.0
+    },
+    {
+      "step": 10,
+      "reward": 0.0
+    },
+    {
+      "step": 11,
+      "reward": 0.1666666716337204
+    },
+    {
+      "step": 12,
+      "reward": 0.0
+    },
+    {
+      "step": 13,
+      "reward": 0.1666666716337204
+    },
+    {
+      "step": 14,
+      "reward": 0.5
+    },
+    {
+      "step": 15,
+      "reward": 0.0
+    },
+    {
+      "step": 16,
+      "reward": 0.0
+    },
+    {
+      "step": 17,
+      "reward": 0.6666666865348816
+    },
+    {
+      "step": 18,
+      "reward": 0.0
+    },
+    {
+      "step": 19,
+      "reward": 0.1666666716337204
+    },
+    {
+      "step": 20,
+      "reward": 0.5
+    },
+    {
+      "step": 21,
+      "reward": 0.3333333432674408
+    },
+    {
+      "step": 22,
+      "reward": 0.3333333432674408
+    },
+    {
+      "step": 23,
+      "reward": 0.0
+    },
+    {
+      "step": 24,
+      "reward": 0.6666666865348816
+    },
+    {
+      "step": 25,
+      "reward": 0.15740740299224854
+    },
+    {
+      "step": 26,
+      "reward": 0.3055555522441864
+    },
+    {
+      "step": 27,
+      "reward": 0.5
+    },
+    {
+      "step": 28,
+      "reward": 0.5
+    },
+    {
+      "step": 29,
+      "reward": 0.5
+    },
+    {
+      "step": 30,
+      "reward": 0.5
+    },
+    {
+      "step": 31,
+      "reward": 0.1666666716337204
+    },
+    {
+      "step": 32,
+      "reward": 1.0
+    },
+    {
+      "step": 33,
+      "reward": 0.3333333432674408
+    },
+    {
+      "step": 34,
+      "reward": 0.8333333730697632
+    },
+    {
+      "step": 35,
+      "reward": 0.8333333730697632
+    },
+    {
+      "step": 36,
+      "reward": 0.8333333730697632
+    },
+    {
+      "step": 37,
+      "reward": 0.6666666865348816
+    },
+    {
+      "step": 38,
+      "reward": 0.8333333730697632
+    },
+    {
+      "step": 39,
+      "reward": 0.3333333432674408
+    },
+    {
+      "step": 40,
+      "reward": 0.3333333432674408
+    },
+    {
+      "step": 41,
+      "reward": 0.3333333432674408
+    },
+    {
+      "step": 42,
+      "reward": 0.1666666716337204
+    },
+    {
+      "step": 43,
+      "reward": 0.3333333432674408
+    },
+    {
+      "step": 44,
+      "reward": 0.8333333730697632
+    },
+    {
+      "step": 45,
+      "reward": 0.8333333730697632
+    },
+    {
+      "step": 46,
+      "reward": 0.3240740895271301
+    },
+    {
+      "step": 47,
+      "reward": 1.0
+    },
+    {
+      "step": 48,
+      "reward": 0.8333333730697632
+    },
+    {
+      "step": 49,
+      "reward": 0.6666666865348816
+    },
+    {
+      "step": 50,
+      "reward": 0.8333333730697632
+    },
+    {
+      "step": 51,
+      "reward": 0.8333333730697632
+    },
+    {
+      "step": 52,
+      "reward": 1.0
+    },
+    {
+      "step": 53,
+      "reward": 0.3333333432674408
+    },
+    {
+      "step": 54,
+      "reward": 0.8333333730697632
+    },
+    {
+      "step": 55,
+      "reward": 1.0
+    },
+    {
+      "step": 56,
+      "reward": 0.1666666716337204
+    },
+    {
+      "step": 57,
+      "reward": 1.0
+    },
+    {
+      "step": 58,
+      "reward": 1.0
+    },
+    {
+      "step": 59,
+      "reward": 0.5
+    },
+    {
+      "step": 60,
+      "reward": 0.8333333730697632
+    },
+    {
+      "step": 61,
+      "reward": 0.5
+    },
+    {
+      "step": 62,
+      "reward": 1.0
+    },
+    {
+      "step": 63,
+      "reward": 0.6666666865348816
+    },
+    {
+      "step": 64,
+      "reward": 1.0
+    },
+    {
+      "step": 65,
+      "reward": 0.6666666865348816
+    },
+    {
+      "step": 66,
+      "reward": 1.0
+    },
+    {
+      "step": 67,
+      "reward": 1.0
+    },
+    {
+      "step": 68,
+      "reward": 0.8333333730697632
+    },
+    {
+      "step": 69,
+      "reward": 0.6666666865348816
+    },
+    {
+      "step": 70,
+      "reward": 0.8333333730697632
+    },
+    {
+      "step": 71,
+      "reward": 0.8333333730697632
+    },
+    {
+      "step": 72,
+      "reward": 0.6666666865348816
+    },
+    {
+      "step": 73,
+      "reward": 0.6666666865348816
+    },
+    {
+      "step": 74,
+      "reward": 0.6666666865348816
+    },
+    {
+      "step": 75,
+      "reward": 0.8333333730697632
+    },
+    {
+      "step": 76,
+      "reward": 0.8333333730697632
+    },
+    {
+      "step": 77,
+      "reward": 1.0
+    },
+    {
+      "step": 78,
+      "reward": 0.6666666865348816
+    },
+    {
+      "step": 79,
+      "reward": 1.0
+    },
+    {
+      "step": 80,
+      "reward": 1.0
+    }
+  ],
+  "adapter": "/vol/testbench-q3-adapter (Modal volume 'testbench-grpo-vol')"
 }

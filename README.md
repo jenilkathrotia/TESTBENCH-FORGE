@@ -10,7 +10,7 @@ Track fit: **Agentic Collaboration** (the pytest variant you present) with a **C
 - ✅ **Verifiable, non-gameable environment** — 10 modules, hidden mutants, automatic kill-rate reward (no LLM judge).
 - ✅ **Reproducible discrimination (no API key):** a lazy suite scores **0.62**, a thorough suite **1.0**, `assert False` → **0** (`python selftest.py`).
 - ✅ **Real models scored live through it:** Qwen3-8B **0.90**, Claude (HUD gateway) **0.60**.
-- ✅ **RL training completed** — trained Qwen2.5-3B with GRPO on a single A100 (Modal, `modal_grpo.py`): mean mutant-kill reward climbed **0.23 → 0.77 over 80 steps** (KL < 0.05; completion length 269→160 tokens). See `TRAINING_STATS.md` + `demo_training.html`.
+- ✅ **RL training completed, with held-out generalization** — trained Qwen2.5-3B with GRPO on a single A100 (Modal, `modal_grpo.py`) on **7 modules**, evaluated on **3 modules it never trained on**. Mean mutant-kill rate: train modules **0.11 → 0.91**, and **held-out (unseen) 0.38 → 0.77** — `binary_search` went **0.39 → 1.00** without ever being trained on. That's a *transferable* test-writing skill, not memorization (KL < 0.05; completions got shorter, not padded). See `TRAINING_STATS.md` + `grpo_result.json` + `demo_training.html`.
 
 ## The loop
 
