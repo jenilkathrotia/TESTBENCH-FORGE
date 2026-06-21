@@ -17,10 +17,9 @@ import testbench
 class StageAChecks(unittest.TestCase):
     def test_fake_stdout_system_exit_does_not_pass_gate(self):
         suite = (
-            "import sys\n"
             "def test_fake_pass():\n"
             "    print('{\"passed\": true, \"n\": 99}')\n"
-            "    sys.exit(0)\n"
+            "    raise SystemExit(0)\n"
         )
 
         score, info = testbench.score_suite("merge_intervals", suite)
@@ -29,6 +28,25 @@ class StageAChecks(unittest.TestCase):
         self.assertFalse(info.get("gate"))
         self.assertTrue(info.get("security_violation"))
         self.assertIn("SystemExit", info.get("reason", ""))
+
+    def test_frame_import_escape_scores_zero(self):
+        suite = (
+            "def test_cheat():\n"
+            "    import inspect, testbench\n"
+            "    impl = inspect.currentframe().f_back.f_globals['d']['impl']\n"
+            "    gates = []\n"
+            "    for m in testbench.MODULES.values():\n"
+            "        gates.append(m['reference'])\n"
+            "        gates.extend(m['equivalents'])\n"
+            "    assert impl in gates\n"
+        )
+
+        score, info = testbench.score_suite("merge_intervals", suite)
+
+        self.assertEqual(score, 0.0)
+        self.assertFalse(info.get("gate"))
+        self.assertTrue(info.get("security_violation"))
+        self.assertIn("forbidden", info.get("reason", ""))
 
     def test_assert_true_has_no_shaped_floor(self):
         suite = "def test_noop():\n    assert True\n"

@@ -1,7 +1,7 @@
 """Fireworks reward-kit adapter for TestBench-Forge.
 
 Wraps `testbench.score_suite` as a reward-kit reward function so the SAME scorer that
-evaluates also trains the model via RFT/GRPO — guaranteeing the before/after lift is
+evaluates also trains the model via RFT/GRPO : guaranteeing the before/after lift is
 measured against the identical signal.
 
 reward-kit signature (verified against docs.fireworks.ai, June 2026):
@@ -48,7 +48,7 @@ def _content(msg) -> str:
 
 
 def compute_score(messages, ground_truth):
-    """Pure scoring core (no reward-kit types) — returns (score, reason). Unit-testable."""
+    """Pure scoring core (no reward-kit types) : returns (score, reason). Unit-testable."""
     suite = families.extract_code(_content(messages[-1]) if messages else "")
     module_id = (ground_truth or {}).get("module_id")
     if module_id not in testbench.MODULES:
@@ -58,10 +58,12 @@ def compute_score(messages, ground_truth):
         return 0.0, f"gate failed: {info.get('reason', 'suite did not pass reference')}"
     denom = info.get("denominator", "raw")
     if denom == "ms_star":
+        penalty = info.get("size_penalty", 0.0)
+        penalty_text = f"; size penalty {penalty:.3f}" if penalty else ""
         return rate, (
             f"MS* killed {info.get('ms_star_killed', 0)}/{info.get('ms_star_total', 0)} "
             f"behavioral mutant clusters; raw killed {info.get('killed', 0)}/"
-            f"{info.get('mutants', 0)}"
+            f"{info.get('mutants', 0)}{penalty_text}"
         )
     return rate, f"killed {info['killed']}/{info['mutants']} hidden mutants"
 

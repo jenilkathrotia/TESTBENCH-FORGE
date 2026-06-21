@@ -1,0 +1,110 @@
+{
+  "status": "offline_report",
+  "honesty_note": "lazy_proxy and thorough_proxy are hand-written suite endpoints, not live base or trained model evals. modal_grpo_curve is a real training reward artifact when present, not held-out eval.",
+  "lazy_proxy_mean": 0.4512,
+  "lazy_proxy_ci95": [
+    0.3083,
+    0.5752
+  ],
+  "thorough_proxy_mean": 1.0,
+  "thorough_proxy_ci95": [
+    1.0,
+    1.0
+  ],
+  "base_band_20_50": true,
+  "modules": {
+    "merge_intervals": {
+      "lazy_proxy": 0.3125,
+      "thorough_proxy": 1.0,
+      "delta": 0.6875,
+      "mutants": 18,
+      "ms_star_total": 16,
+      "saturated": false
+    },
+    "is_balanced": {
+      "lazy_proxy": 0.5714,
+      "thorough_proxy": 1.0,
+      "delta": 0.4286,
+      "mutants": 16,
+      "ms_star_total": 14,
+      "saturated": false
+    },
+    "two_sum": {
+      "lazy_proxy": 0.6,
+      "thorough_proxy": 1.0,
+      "delta": 0.4,
+      "mutants": 13,
+      "ms_star_total": 10,
+      "saturated": false
+    },
+    "run_length_encode": {
+      "lazy_proxy": 0.625,
+      "thorough_proxy": 1.0,
+      "delta": 0.375,
+      "mutants": 18,
+      "ms_star_total": 16,
+      "saturated": false
+    },
+    "binary_search": {
+      "lazy_proxy": 0.1333,
+      "thorough_proxy": 1.0,
+      "delta": 0.8667,
+      "mutants": 18,
+      "ms_star_total": 15,
+      "saturated": false
+    },
+    "roman_to_int": {
+      "lazy_proxy": 0.0,
+      "thorough_proxy": 1.0,
+      "delta": 1.0,
+      "mutants": 18,
+      "ms_star_total": 18,
+      "saturated": false
+    },
+    "gcd": {
+      "lazy_proxy": 0.625,
+      "thorough_proxy": 1.0,
+      "delta": 0.375,
+      "mutants": 8,
+      "ms_star_total": 8,
+      "saturated": false
+    },
+    "flatten": {
+      "lazy_proxy": 0.5556,
+      "thorough_proxy": 1.0,
+      "delta": 0.4444,
+      "mutants": 11,
+      "ms_star_total": 9,
+      "saturated": false
+    },
+    "is_palindrome": {
+      "lazy_proxy": 0.5556,
+      "thorough_proxy": 1.0,
+      "delta": 0.4444,
+      "mutants": 10,
+      "ms_star_total": 9,
+      "saturated": false
+    },
+    "fizzbuzz": {
+      "lazy_proxy": 0.5333,
+      "thorough_proxy": 1.0,
+      "delta": 0.4667,
+      "mutants": 18,
+      "ms_star_total": 15,
+      "saturated": false
+    }
+  },
+  "modal_grpo_curve": {
+    "source": "grpo_rewards.txt",
+    "steps": 80,
+    "first10_mean": 0.2333,
+    "last10_mean": 0.75,
+    "delta": 0.5167,
+    "best": 1.0
+  },
+  "credential_gated_next": {
+    "base_vs_best_of_n": "Requires model API key to sample candidate suites.",
+    "trained_eval": "Requires a trained endpoint or saved model completions.",
+    "hud_training": "Requires HUD_API_KEY."
+  }
+}

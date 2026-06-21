@@ -1,13 +1,13 @@
 """Generate the TestBench-Forge live demo dashboard (demo.html).
 
-A self-contained, dependency-free HTML page with a "Run RFT ▶" button that animates the
-bug-kill meter climbing from base → trained per module, and flips the headline corruption
-(a bracket-type bug) from "missed" to "caught".
+A self-contained, dependency-free HTML page with a reveal button that animates the
+bug-kill meter climbing from a lazy suite to a thorough suite, and flips the headline
+corruption (a bracket-type bug) from "missed" to "caught".
 
 Data source:
   - if results.json exists ({module: {base: x, trained: y}}), uses your REAL model runs;
-  - otherwise falls back to the self-test proxy (base ≈ weak suite, trained ≈ thorough suite),
-    clearly labeled, so the demo works offline before the RFT run finishes.
+  - otherwise falls back to the self-test proxy (lazy suite vs thorough suite), clearly
+    labeled, so the demo works offline before live model evals exist.
 
 Run: .venv/bin/python demo.py   ->  writes demo.html  (open it / screen-share on stage)
 """
@@ -21,7 +21,7 @@ import selftest
 def gather():
     if os.path.exists("results.json"):
         data = json.load(open("results.json"))
-        source = "results.json — real base vs RFT model runs"
+        source = "results.json: real base vs RFT model runs"
     else:
         data = {}
         for mid in testbench.MODULES:
@@ -36,6 +36,17 @@ def gather():
         "trained": not testbench._run_suite_local(bug, selftest.THOROUGH["is_balanced"]),
     }
     return data, source, head
+
+
+def modal_curve_summary():
+    if not os.path.exists("grpo_result.json"):
+        return "Modal GRPO artifact not found in this checkout."
+    data = json.load(open("grpo_result.json"))
+    return (
+        "Real Modal A100 GRPO reward artifact: first-10 mean "
+        f"{data.get('reward_first10_mean')} to last-10 mean {data.get('reward_last10_mean')} "
+        f"over {data.get('steps')} steps on {data.get('model', 'Qwen2.5-3B')}."
+    )
 
 
 _HTML = """<!doctype html>
@@ -67,18 +78,19 @@ _HTML = """<!doctype html>
   button:disabled{opacity:.5;cursor:default} .foot{color:var(--muted);font-size:12px;margin-top:22px}
 </style></head><body>
 <div class="wrap">
-  <h1>TestBench-Forge — bug-kill meter</h1>
-  <p class="sub">Reward = fraction of hidden, freshly-injected mutants the agent's test suite kills. __SOURCE__</p>
+  <h1>TestBench-Forge: bug-kill meter</h1>
+  <p class="sub">Reward = MS* hidden-mutant kill rate with light suite-size control, gated by behavior-equivalent refactors. __SOURCE__</p>
   <div class="mean"><span class="big" id="mean">__MEANB__%</span><span class="lbl">mean mutant-kill rate</span></div>
   __ROWS__
   <div class="head">
-    <div class="q">bug: <b>ignores bracket type</b> — accepts <code>"(]"</code> as balanced</div>
-    <div class="verdict stateA">a lazy (happy-path) suite: <span class="miss">✗ missed — accepts the corrupt input</span></div>
-    <div class="verdict stateB">a thorough (edge-case) suite: <span class="catch">✓ caught — a test fails on "(]"</span></div>
+    <div class="q">bug: <b>ignores bracket type</b>: accepts <code>"(]"</code> as balanced</div>
+    <div class="verdict stateA">a lazy (happy-path) suite: <span class="miss">missed, accepts the corrupt input</span></div>
+    <div class="verdict stateB">a thorough (edge-case) suite: <span class="catch">caught, a test fails on "(]"</span></div>
   </div>
   <button id="btn" onclick="train()">Reveal a thorough suite ▶</button>
-  <p class="foot">Real models scored live through this environment: <b>Qwen3-8B → 0.90</b> · the reward is non-gameable (a no-op / assert-False suite → 0).</p>
-  <p class="foot">A lazy suite passes the obvious cases but misses the boundary bug; a thorough one catches it — scored only by bugs it never saw. That gap is exactly what RL training is wired to close.</p>
+  <p class="foot">__CURVE__</p>
+  <p class="foot">A no-op or assert-False suite scores 0. The signal is hard to game, not magic: the runner rejects fake pass ledgers, import/introspection escapes, and brittle refactor failures.</p>
+  <p class="foot">A lazy suite passes obvious cases but misses boundary bugs; a thorough one catches them. That gap is what the GRPO run is optimizing.</p>
 </div>
 <script>
   var MB=__MEANB__, MT=__MEANT__;
@@ -106,7 +118,8 @@ def main():
                  f'<div class="pct"><span class="bv">{b}%</span> → <span class="tv">{t}%</span> '
                  f'<span class="delta">+{t - b}</span></div></div>')
     html = (_HTML.replace("__ROWS__", rows).replace("__SOURCE__", source)
-            .replace("__MEANB__", str(meanb)).replace("__MEANT__", str(meant)))
+            .replace("__MEANB__", str(meanb)).replace("__MEANT__", str(meant))
+            .replace("__CURVE__", modal_curve_summary()))
     with open("demo.html", "w") as f:
         f.write(html)
     hb = "caught" if head["base"] else "MISSED"

@@ -2,7 +2,7 @@
 
 Proves the two things judges will ask about:
   1. The gym runs and scores deterministically (mutation kill rate).
-  2. There is real RFT headroom — a WEAK suite (happy-path only) kills few mutants, while a
+  2. There is real RFT headroom : a WEAK suite (happy-path only) kills few mutants, while a
      THOROUGH suite kills ~all of them AND still passes the over-spec gate (so the 1.0
      ceiling is real and reachable, not blocked by equivalent mutants).
 
@@ -34,7 +34,8 @@ THOROUGH = {
         "def test_single():\n    assert merge_intervals([[1,4]]) == [[1,4]]\n"
         "def test_unsorted():\n    assert merge_intervals([[8,10],[1,3],[2,6]]) == [[1,6],[8,10]]\n"
         "def test_nested():\n    assert merge_intervals([[1,10],[2,3]]) == [[1,10]]\n"
-        "def test_disjoint():\n    assert merge_intervals([[1,2],[4,5]]) == [[1,2],[4,5]]\n"
+        "def test_duplicate_starts():\n    assert merge_intervals([[1,2],[1,5],[6,7]]) == [[1,5],[6,7]]\n"
+        "def test_contained_after_two():\n    assert merge_intervals([[1,2],[4,7],[5,6]]) == [[1,2],[4,7]]\n"
     ),
     "is_balanced": (
         "def test_ok():\n    assert is_balanced('([{}])') == True\n"
@@ -51,6 +52,7 @@ THOROUGH = {
         "def test_indices_not_values():\n    assert two_sum([3,3], 6) == [0,1]\n"
         "def test_no_reuse():\n    assert two_sum([3,2,4], 6) == [1,2]\n"
         "def test_first_pair():\n    assert two_sum([0,4,3,0], 0) == [0,3]\n"
+        "def test_earliest_pair():\n    assert two_sum([1,2,3,4], 5) == [1,2]\n"
     ),
     "run_length_encode": (
         "def test_run():\n    assert run_length_encode('aaab') == 'a3b1'\n"
@@ -69,13 +71,11 @@ THOROUGH = {
         "def test_single_miss():\n    assert binary_search([2], 3) == -1\n"
     ),
     "roman_to_int": (
-        "def test_simple():\n    assert roman_to_int('III') == 3\n"
         "def test_iv():\n    assert roman_to_int('IV') == 4\n"
         "def test_ix():\n    assert roman_to_int('IX') == 9\n"
         "def test_lviii():\n    assert roman_to_int('LVIII') == 58\n"
         "def test_big():\n    assert roman_to_int('MCMXCIV') == 1994\n"
         "def test_xl():\n    assert roman_to_int('XL') == 40\n"
-        "def test_d():\n    assert roman_to_int('D') == 500\n"
         "def test_cd():\n    assert roman_to_int('CD') == 400\n"
         "def test_dcccxc():\n    assert roman_to_int('DCCCXC') == 890\n"
         "def test_xliv():\n    assert roman_to_int('XLIV') == 44\n"
@@ -86,6 +86,8 @@ THOROUGH = {
         "def test_multiple():\n    assert gcd(100, 10) == 10\n"
         "def test_equal():\n    assert gcd(7, 7) == 7\n"
         "def test_one():\n    assert gcd(1, 1) == 1\n"
+        "def test_one_other():\n    assert gcd(1, 9) == 1\n"
+        "def test_swapped():\n    assert gcd(36, 48) == 12\n"
     ),
     "flatten": (
         "def test_basic():\n    assert flatten([[1,2],[3]]) == [1,2,3]\n"
@@ -101,6 +103,8 @@ THOROUGH = {
         "def test_single():\n    assert is_palindrome('a') == True\n"
         "def test_even():\n    assert is_palindrome('abba') == True\n"
         "def test_even_not():\n    assert is_palindrome('abca') == False\n"
+        "def test_long_pal():\n    assert is_palindrome('abcba') == True\n"
+        "def test_case_sensitive():\n    assert is_palindrome('Aa') == False\n"
     ),
     "fizzbuzz": (
         "def test_one():\n    assert fizzbuzz(1) == ['1']\n"
