@@ -4,11 +4,20 @@ End-to-end recipe to run a small Fireworks RFT (GRPO) job against the TestBench-
 evaluator, then compare base vs trained with a sanitized report. Every command was
 checked against the installed toolchain (eval-protocol from `.venv`, firectl on PATH).
 
-Model choice:
-- Smoke / pipeline validation: `accounts/fireworks/models/qwen3-0p6b` (tiny, cheap).
-- Real result: `accounts/fireworks/models/llama-v3p1-8b-instruct` (enough capability for a
-  believable lift). A 0.6B model may be too small to show meaningful improvement, so do
-  not headline a qwen3-0p6b number.
+Model choice (verified against the live account, 2026-06-21):
+- Smoke / pipeline validation: `accounts/fireworks/models/qwen3-0p6b` (tiny; confirmed
+  trainable here, RFT is **free for models under 16B**).
+- Bigger / more-believable lift: a larger supported base such as `qwen3-4b` (still <16B,
+  free) or a >16B model from the supported list (billed per GPU-hour). NOTE:
+  `llama-v3p1-8b-instruct` is NOT in the managed-RFT base list and 404s here; pick a
+  model from the Managed Fine-Tuning supported-base table.
+- A 0.6B model may be too small to show a large lift, so do not headline a qwen3-0p6b
+  number as a capability claim.
+
+Spending: RFT training is free under 16B params. The credits ($500 here) are spent per
+GPU-second (H100 ~$7/hr) only on (a) >16B RFT and (b) on-demand deployments used for
+inference. Mainstream models are NOT on this account's serverless pool (they 404), so any
+direct inference needs a short-lived on-demand deployment (see step 9).
 
 Never print `FIREWORKS_API_KEY`. Load it into the environment from `.env`; do not echo it.
 
@@ -86,32 +95,36 @@ and the dataset (`testbench-forge-dataset`) referenced below.
 .venv/bin/eval-protocol create rft --dry-run -y --skip-validation \
   --dataset testbench-forge-dataset \
   --evaluator testbench-eval-protocol-test-testbench-forge-rft \
-  --training-config-base-model accounts/fireworks/models/llama-v3p1-8b-instruct \
-  --training-config-output-model testbench-forge-rft-smoke \
+  --training-config-base-model accounts/fireworks/models/qwen3-0p6b \
+  --training-config-output-model accounts/<ACCOUNT_ID>/models/testbench-forge-rft-smoke \
   --training-config-epochs 1 \
-  --loss-config-method grpo \
-  --loss-config-kl-beta 0.001 \
   --inference-parameters-response-candidates-count 4 \
   --inference-parameters-temperature 0.8 \
   --inference-parameters-max-output-tokens 4096 \
   --max-concurrent-rollouts 4 \
   --max-concurrent-evaluations 4
 ```
+
+Two gotchas, verified on the live CLI:
+- `--training-config-output-model` MUST be a full path `accounts/<ACCOUNT_ID>/models/<name>`
+  (a bare name returns a 400 "name must be in the format ..." error).
+- Do NOT pass `--loss-config-method grpo`: this CLI build rejects the literal (`invalid
+  Literal value: 'grpo'`) even though `--help` lists `{grpo,dapo,gspo-token}`. Omit it; the
+  default is the GRPO-style RL loss (the platform's own demo job trains with
+  `Method: METHOD_UNSPECIFIED`).
 
 ## 7. Smoke RFT launch (first real spend gate)
 
-Same command without `--dry-run`. This costs real compute. For the cheapest possible
-smoke, swap the base model to `accounts/fireworks/models/qwen3-0p6b`.
+Same command without `--dry-run`. With a <16B base (e.g. qwen3-0p6b) RFT is free; a >16B
+base bills per GPU-hour.
 
 ```bash
-.venv/bin/eval-protocol create rft -y \
+.venv/bin/eval-protocol create rft -y --skip-validation \
   --dataset testbench-forge-dataset \
   --evaluator testbench-eval-protocol-test-testbench-forge-rft \
-  --training-config-base-model accounts/fireworks/models/llama-v3p1-8b-instruct \
-  --training-config-output-model testbench-forge-rft-smoke \
+  --training-config-base-model accounts/fireworks/models/qwen3-0p6b \
+  --training-config-output-model accounts/<ACCOUNT_ID>/models/testbench-forge-rft-smoke \
   --training-config-epochs 1 \
-  --loss-config-method grpo \
-  --loss-config-kl-beta 0.001 \
   --inference-parameters-response-candidates-count 4 \
   --inference-parameters-temperature 0.8 \
   --inference-parameters-max-output-tokens 4096 \
@@ -119,18 +132,37 @@ smoke, swap the base model to `accounts/fireworks/models/qwen3-0p6b`.
   --max-concurrent-evaluations 4
 ```
 
+Note: `create rft` auto-syncs secrets from `.env` into your Fireworks account secret store.
+Our evaluator needs no secrets, so pass `--env-file /dev/null` (or an empty file) if you do
+not want keys like `HUD_API_KEY` synced to the platform.
+
 ## 8. Monitor (capture sanitized metadata only)
 
-Record only: job ID, output model name, base model, start/end time, final status, and the
-failure reason if any. Do not commit provider logs or raw transient JSON.
+```bash
+firectl reinforcement-fine-tuning-job get <JOB_ID> 2>&1 | grep -E '^State:|Percent:'
+```
+
+The job's own `Output Metrics.curves.average.Score` is the per-chunk reward trajectory
+(step-0 vs final = before/after on the TestBench reward), captured for free during
+training. Record only: job ID, output model name, base model, start/end time, final
+status, failure reason if any. Do not commit provider logs or raw transient JSON.
 
 ## 9. Evaluate trained vs base and report
 
+Direct inference needs an on-demand deployment (serverless 404s here), billed per
+GPU-second. Deploy, evaluate, then DELETE to stop billing:
+
 ```bash
-# trained model (once available), same benchmark as the base
+# stand up a short-lived deployment of the trained model (~$7/hr H100, billed per second)
+firectl deployment create accounts/charliegillet/models/testbench-forge-rft-smoke \
+  --region GLOBAL --wait                         # prints accounts/<acct>/deployments/<id>
+
+# benchmark via the DEPLOYMENT path (not the model catalog path)
 .venv/bin/python fireworks_baseline.py \
-  --model accounts/fireworks/models/testbench-forge-rft-smoke \
+  --model accounts/charliegillet/deployments/<DEPLOYMENT_ID> \
   --provider fireworks-rft --runs 3 --out /tmp/fireworks_rft.json
+
+firectl deployment delete accounts/charliegillet/deployments/<DEPLOYMENT_ID>   # stop billing
 
 # Markdown comparison (sanitized; this .md is the committed artifact)
 .venv/bin/python rft_eval_report.py \
@@ -138,6 +170,9 @@ failure reason if any. Do not commit provider logs or raw transient JSON.
   --inputs /tmp/fireworks_rft.json \
   --out rft_report.md
 ```
+
+If you only need the lift number (not a standalone eval), the RFT job's own reward curve
+(step 8) already gives before/after for free, no deployment required.
 
 ## 10. Decision and handoff
 
