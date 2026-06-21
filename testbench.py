@@ -33,10 +33,15 @@ import sys
 _SUITE_RUNNER = r'''
 import json, sys, types, contextlib
 d = json.loads(sys.stdin.read())
+_NONCE = d.get("nonce", "")
+def _emit(passed, n):
+    # the parent trusts ONLY the verdict line carrying this per-call nonce, so an
+    # untrusted suite that prints a forged {"passed": true} ledger is ignored.
+    print(json.dumps({"passed": bool(passed), "n": n, "nonce": _NONCE}))
 ns = {}
 try:
     exec(d["impl"], ns)
-except Exception:
+except BaseException:
     pass  # tests calling the (now-undefined) function will fail -> mutant killed
 
 # Agents habitually write `from <fn> import <fn>` / `from solution import <fn>` and
@@ -84,17 +89,17 @@ except Exception:
 
 try:
     exec(d["suite"], ns)
-except Exception:
-    print(json.dumps({"passed": False, "n": 0})); raise SystemExit
+except BaseException:
+    _emit(False, 0); raise SystemExit
 tests = [v for k, v in list(ns.items()) if k.startswith("test_") and callable(v)]
 if not tests:
-    print(json.dumps({"passed": False, "n": 0})); raise SystemExit
+    _emit(False, 0); raise SystemExit
 for t in tests:
     try:
         t()
-    except Exception:
-        print(json.dumps({"passed": False, "n": len(tests)})); raise SystemExit
-print(json.dumps({"passed": True, "n": len(tests)}))
+    except BaseException:
+        _emit(False, len(tests)); raise SystemExit
+_emit(True, len(tests))
 '''
 
 _EVAL_RUNNER = r'''
@@ -123,20 +128,30 @@ print(json.dumps({"sig": sig}))
 
 
 def _run_suite_local(impl_src: str, suite_src: str, timeout: float = 4.0) -> bool:
-    """True iff the suite PASSES against this implementation (local subprocess)."""
-    payload = json.dumps({"impl": impl_src, "suite": suite_src})
+    """True iff the suite PASSES against this implementation (local subprocess).
+
+    The verdict is authenticated by a per-call nonce: the untrusted suite cannot know
+    it (introspection that could read it is blocked by _suite_security_violation), so a
+    forged {"passed": true} stdout ledger is ignored — only the harness's nonce-stamped
+    line is trusted. No authenticated verdict (forged / crashed / silent) => not a pass."""
+    nonce = hashlib.sha256(os.urandom(16)).hexdigest()
+    payload = json.dumps({"impl": impl_src, "suite": suite_src, "nonce": nonce})
     try:
         proc = subprocess.run([sys.executable, "-c", _SUITE_RUNNER], input=payload,
                               capture_output=True, text=True, timeout=timeout)
     except subprocess.TimeoutExpired:
         return False  # a hanging impl/test => not a pass (so a hanging mutant is killed)
-    out = (proc.stdout or "").strip().splitlines()
-    if not out:
-        return False
-    try:
-        return bool(json.loads(out[-1]).get("passed"))
-    except Exception:
-        return False
+    for line in reversed((proc.stdout or "").splitlines()):
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            obj = json.loads(line)
+        except Exception:
+            continue
+        if isinstance(obj, dict) and obj.get("nonce") == nonce:
+            return bool(obj.get("passed"))
+    return False
 
 
 def _run_suite_once(impl_src: str, suite_src: str, timeout: float = 4.0) -> bool:
@@ -636,8 +651,58 @@ def get_mutant_pool(module_id: str) -> list:
     return pool
 
 
+# A test suite is UNTRUSTED code. These names/modules/attributes are the static escape
+# vectors that would let a suite read the hidden reference/mutant source (frame &
+# introspection walks), reach the OS, or forge the runner verdict. An ordinary suite
+# (plain asserts, pytest.raises/approx, importing the function under test) uses none of them.
+_DENY_MODULES = {
+    "os", "sys", "subprocess", "inspect", "importlib", "builtins", "ctypes", "socket",
+    "signal", "gc", "threading", "multiprocessing", "posix", "pty", "code", "codeop",
+    "runpy", "marshal", "pickle", "shutil", "resource", "mmap", "fcntl", "platform",
+}
+_DENY_NAMES = {
+    "eval", "exec", "compile", "open", "__import__", "globals", "locals", "vars",
+    "getattr", "setattr", "delattr", "input", "breakpoint", "memoryview",
+}
+_DENY_ATTRS = {
+    "__globals__", "__subclasses__", "__mro__", "__bases__", "__base__", "__class__",
+    "__builtins__", "__code__", "__closure__", "__dict__", "__getattribute__",
+    "__reduce__", "__reduce_ex__", "__init_subclass__", "__subclasshook__",
+    "f_globals", "f_back", "f_locals", "f_builtins", "gi_frame", "cr_frame", "tb_frame",
+    "_getframe", "currentframe",
+}
+
+
+def _suite_security_violation(suite_src: str) -> str | None:
+    """Reason string if the suite tries to escape the sandbox / read hidden state / forge
+    the verdict; None if it looks like an ordinary test suite. Cheating scores 0 — the only
+    way to score is to write tests that actually catch bugs."""
+    try:
+        tree = ast.parse(suite_src)
+    except SyntaxError:
+        return None  # unparseable -> it just fails the gate -> 0 anyway
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for a in node.names:
+                if a.name.split(".")[0] in _DENY_MODULES:
+                    return "import:" + a.name
+        elif isinstance(node, ast.ImportFrom):
+            if (node.module or "").split(".")[0] in _DENY_MODULES:
+                return "import-from:" + (node.module or "")
+        elif isinstance(node, ast.Attribute):
+            if node.attr in _DENY_ATTRS:
+                return "attr:" + node.attr
+        elif isinstance(node, ast.Name):
+            if node.id in _DENY_NAMES:
+                return "name:" + node.id
+    return None
+
+
 def score_suite(module_id: str, suite_src: str):
     """Reward = (#mutants killed / #mutants) gated by passing reference + equivalents."""
+    viol = _suite_security_violation(suite_src)
+    if viol:  # untrusted suite tried to escape / read hidden state / forge the verdict
+        return 0.0, {"gate": False, "reason": "security_violation", "detail": viol}
     m = MODULES[module_id]
     gate_impls = [m["reference"]] + m["equivalents"]
     for impl in gate_impls:

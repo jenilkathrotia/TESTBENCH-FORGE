@@ -11,6 +11,7 @@ Track fit: **Agentic Collaboration** (the pytest variant you present) with a **C
 - ✅ **Reproducible discrimination (no API key):** a lazy suite scores **0.62**, a thorough suite **1.0**, `assert False` → **0** (`python selftest.py`).
 - ✅ **Real models scored live through it:** Qwen3-8B **0.90**, Claude (HUD gateway) **0.60**.
 - ✅ **RL training completed, with held-out generalization** — trained Qwen2.5-3B with GRPO on a single A100 (Modal, `modal_grpo.py`) on **7 modules**, evaluated on **3 modules it never trained on**. Mean mutant-kill rate: train modules **0.11 → 0.91**, and **held-out (unseen) 0.38 → 0.77** — `binary_search` went **0.39 → 1.00** without ever being trained on. That's a *transferable* test-writing skill, not memorization (KL < 0.05; completions got shorter, not padded). See `TRAINING_STATS.md` + `grpo_result.json` + `demo_training.html`.
+- ✅ **Cheat-proofed reward (adversarially proven):** the suite is untrusted code, so the runner authenticates its verdict with a per-call nonce and an AST guard rejects sandbox escapes. Forging a `{"passed": true}` stdout ledger, short-circuiting with `SystemExit`, or reading the hidden mutants via frame/`__subclasses__`/`inspect` introspection **all score 0** — while legitimate suites are unaffected (`python security_checks.py`).
 
 ## The loop
 
@@ -22,7 +23,7 @@ Track fit: **Agentic Collaboration** (the pytest variant you present) with a **C
 ## Why it's a strong RL environment (not an eval)
 
 - **Multi-signal, verifiable reward** with a clean execution oracle — no LLM judge anywhere.
-- **Non-gameable** (validated): `assert False` → fails the reference gate → **0**; mutants are never shown, so you can't target them — *you cannot fake killing a bug you've never seen*; the over-spec gate kills brittle snapshot tests.
+- **Non-gameable** (validated): `assert False` → fails the reference gate → **0**; mutants are never shown, so you can't target them — *you cannot fake killing a bug you've never seen*; the over-spec gate kills brittle snapshot tests. The suite runs as **untrusted code**: a per-call **nonce** authenticates the runner verdict (a forged stdout ledger is ignored) and an **AST guard** rejects frame/`__subclasses__`/`inspect`/`os`/`eval` escapes → **0**. All proven in `security_checks.py`.
 - **Infinite data**: AST mutation operators auto-generate buggy variants × unlimited modules. Mutants are differentially filtered against the reference so the pool is all **non-equivalent** (killable) — giving a clean 1.0 ceiling.
 
 ## Files
@@ -38,6 +39,7 @@ Track fit: **Agentic Collaboration** (the pytest variant you present) with a **C
 | `modal_runner.py` | Modal parallel-scoring + GPU entrypoint (`REWARDFORGE_RUNNER=modal`) | new |
 | `demo.py` → `demo.html` | interactive bug-kill-meter dashboard ("Run RFT ▶" animates base→trained) | new |
 | `selftest.py` | proves weak→thorough kill-rate headroom + non-gameability, **no API key** | updated |
+| `security_checks.py` | **adversarial cheat-proof**: forged-ledger / `SystemExit` / introspection / `os`·`eval` escapes all score 0; legit suite intact, **no API key** | new |
 | `tasks.py` | the 10 modules under test for `hud eval` | updated |
 | `scorer.py` | (legacy verifier scoring; unused by this task) | unchanged |
 
