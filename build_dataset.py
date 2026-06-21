@@ -4,9 +4,10 @@ Each row pairs the module's prompt with its ground-truth metadata so the reward 
 can recover which module to score:
 
     {"messages": [{"role": "user", "content": <prompt>}],
+     "ground_truth": {"module_id": <id>},
      "ground_truth_for_eval": {"module_id": <id>}}
 
-GRPO samples N rollouts per prompt internally, so one row per module is enough to start —
+GRPO samples N rollouts per prompt internally, so one row per module is enough to start.
 add more modules in testbench.py for real training volume.
 
 Run: .venv/bin/python build_dataset.py   ->  writes dataset.jsonl
@@ -21,6 +22,7 @@ def build(path: str = "dataset.jsonl") -> int:
     for module_id in testbench.MODULES:
         rows.append({
             "messages": [{"role": "user", "content": testbench.build_testbench_prompt(module_id)}],
+            "ground_truth": {"module_id": module_id},
             "ground_truth_for_eval": {"module_id": module_id},
         })
     with open(path, "w") as f:
