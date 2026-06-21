@@ -60,7 +60,8 @@
     <div class="verdict stateB">a thorough (edge-case) suite: <span class="catch">✓ caught — a test fails on "(]"</span></div>
     <div class="note">This is an <b>illustration</b> of the <i>kind</i> of edge-case bug the reward rewards catching — scored with hand-written suites, since we didn't save the trained model's generated suite text. In the real run <code>is_balanced</code> was already near-ceiling (0.75→0.80); the real headline win is <b>binary_search 0.39 → 1.00</b>, generalized from never being trained on.</div>
   </div>
-  <button id="btn" onclick="train()">Run RFT ▶</button>
+  <button id="btn" onclick="reveal()">Reveal saved result: base → GRPO-trained ▶</button>
+  <p class="foot">Animates the <b>saved</b> before→after from the real Modal A100 GRPO run (<code>grpo_result.json</code>) — a pre-computed result rendered for legibility, <b>not</b> live inference. The live, re-runnable proofs are <code>selftest.py</code> and <code>security_checks.py</code>.</p>
   <p class="foot">Trained on 7 modules, evaluated on <span class="hl">3 it never saw</span>. Held-out mean <b>0.38 → 0.77</b>; <span class="hl">binary_search 0.39 → 1.00</span> without ever training on it — a transferable test-writing skill, not memorization. <code>roman_to_int</code> only reached 0.51 (partial transfer) and <code>is_balanced</code> barely moved (already high) — shown honestly.</p>
   <p class="foot">The reward is <b>non-gameable</b>: it's mutation-kill rate scored by the environment, no LLM judge — a no-op / assert-False suite scores 0. Eval is <b>n=5</b> per module (temp 0.7), so individual numbers carry ~±0.1 noise; the direction is unambiguous.</p>
   <p class="foot">Separate live-baseline context: a frontier model (<b>Qwen3-8B</b>) scored <b>0.90</b> through this same environment — the gym discriminates skill, and the 3B model's training curve climbed from a first-10-step mean of <b>0.13</b> to a last-10-step mean of <b>0.82</b> over 80 steps.</p>
@@ -72,7 +73,7 @@
       el.textContent=Math.round(b+(t-b)*k)+'%'; if(k<1)requestAnimationFrame(step); }
     requestAnimationFrame(step);
   }
-  function train(){
+  function reveal(){
     document.body.classList.add('trained');
     document.getElementById('btn').disabled=true;
     animate('meanTrain', 11, 91);

@@ -38,7 +38,7 @@ Track fit: **Agentic Collaboration** (the pytest variant you present) with a **C
 | `fireworks_baseline.py` | raw baseline / best-of-N runner via the Fireworks inference SDK | new |
 | `daytona_runner.py` | Daytona sandbox runner for untrusted code (`REWARDFORGE_RUNNER=daytona`) | new |
 | `modal_runner.py` | Modal parallel-scoring + GPU entrypoint (`REWARDFORGE_RUNNER=modal`) | new |
-| `demo.py` → `demo.html` | interactive bug-kill-meter dashboard ("Run RFT ▶" animates base→trained) | new |
+| `demo.py` → `demo.html` | bug-kill-meter dashboard; reveals the **saved** base→trained before/after from `grpo_result.json` (not live inference) | new |
 | `selftest.py` | proves weak→thorough kill-rate headroom + non-gameability, **no API key** | updated |
 | `security_checks.py` | **adversarial cheat-proof**: forged-ledger / `SystemExit` / introspection / `os`·`eval` escapes all score 0; legit suite intact, **no API key** | new |
 | `tasks.py` | the 10 modules under test for `hud eval` | updated |
@@ -55,7 +55,7 @@ source .venv/bin/activate           # turn on the project's tools
 #    => 10 modules, weak mean 0.62 vs thorough 1.00 (clean ceiling); assert-False => 0.0;
 #       thorough suite catches the bracket-type bug the weak one misses.
 
-# 2. build the demo dashboard (open demo.html — "Run RFT ▶" animates base->trained)
+# 2. build the demo dashboard (open demo.html — reveals the saved base->trained result)
 .venv/bin/python demo.py
 
 # 3. keys
