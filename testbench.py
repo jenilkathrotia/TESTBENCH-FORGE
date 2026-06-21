@@ -31,15 +31,28 @@ import sys
 # ---------------------------------------------------------------------------
 
 _SUITE_RUNNER = r'''
-import json, sys, types, contextlib
+import json, sys, types, contextlib, os
 d = json.loads(sys.stdin.read())
-_NONCE = d.get("nonce", "")
+_nonce = d.get("nonce", "")
 _SUITE_SRC = d["suite"]
-def _emit(passed, n):
+_json_dumps = json.dumps
+_os_write = os.write
+_stdout_fd = sys.stdout.fileno()
+
+def _emit(obj):
     # the parent trusts ONLY the verdict line carrying this per-call nonce, so an
     # untrusted suite that prints a forged {"passed": true} ledger is ignored.
-    print(json.dumps({"passed": bool(passed), "n": n, "nonce": _NONCE}))
-ns = {}
+    obj["nonce"] = _nonce
+    _os_write(_stdout_fd, (_json_dumps(obj, sort_keys=True) + "\n").encode())
+
+ns = {
+    "__name__": "__testbench_suite__",
+    "__doc__": None,
+    "__file__": "<testbench-suite>",
+    "__spec__": None,
+    "__loader__": None,
+    "__package__": None,
+}
 try:
     exec(d["impl"], ns)
 except BaseException:
@@ -93,17 +106,31 @@ except Exception:
 
 try:
     exec(_SUITE_SRC, ns)
-except BaseException:
-    _emit(False, 0); raise SystemExit
+except BaseException as e:
+    _emit({"passed": False, "valid": False, "reason": type(e).__name__,
+           "security_violation": type(e).__name__ in ("SystemExit", "KeyboardInterrupt", "GeneratorExit"),
+           "n": 0, "executed": 0, "failures": [type(e).__name__]})
+    raise SystemExit(0)
 tests = [v for k, v in list(ns.items()) if k.startswith("test_") and callable(v)]
 if not tests:
-    _emit(False, 0); raise SystemExit
+    _emit({"passed": False, "valid": True, "reason": "no tests", "security_violation": False,
+           "n": 0, "executed": 0, "failures": ["no tests"]})
+    raise SystemExit(0)
+executed = 0
+failures = []
 for t in tests:
     try:
         t()
-    except BaseException:
-        _emit(False, len(tests)); raise SystemExit
-_emit(True, len(tests))
+        executed += 1
+    except BaseException as e:
+        failures.append(type(e).__name__)
+        _emit({"passed": False, "valid": type(e).__name__ not in ("SystemExit", "KeyboardInterrupt", "GeneratorExit"),
+               "reason": type(e).__name__,
+               "security_violation": type(e).__name__ in ("SystemExit", "KeyboardInterrupt", "GeneratorExit"),
+               "n": len(tests), "executed": executed, "failures": failures})
+        raise SystemExit(0)
+_emit({"passed": True, "valid": True, "reason": "ok", "security_violation": False,
+       "n": len(tests), "executed": executed, "failures": []})
 '''
 
 _EVAL_RUNNER = r'''
@@ -131,31 +158,44 @@ print(json.dumps({"sig": sig}))
 '''
 
 
-def _run_suite_local(impl_src: str, suite_src: str, timeout: float = 4.0) -> bool:
-    """True iff the suite PASSES against this implementation (local subprocess).
-
-    The verdict is authenticated by a per-call nonce: the untrusted suite cannot know
-    it (introspection that could read it is blocked by _suite_security_violation), so a
-    forged {"passed": true} stdout ledger is ignored — only the harness's nonce-stamped
-    line is trusted. No authenticated verdict (forged / crashed / silent) => not a pass."""
+def _run_suite_local_result(impl_src: str, suite_src: str, timeout: float = 4.0) -> dict:
+    """Structured local subprocess result for one suite/implementation pair."""
     nonce = hashlib.sha256(os.urandom(16)).hexdigest()
     payload = json.dumps({"impl": impl_src, "suite": suite_src, "nonce": nonce})
     try:
         proc = subprocess.run([sys.executable, "-c", _SUITE_RUNNER], input=payload,
                               capture_output=True, text=True, timeout=timeout)
     except subprocess.TimeoutExpired:
-        return False  # a hanging impl/test => not a pass (so a hanging mutant is killed)
-    for line in reversed((proc.stdout or "").splitlines()):
-        line = line.strip()
-        if not line:
-            continue
+        return {"passed": False, "valid": False, "reason": "timeout", "security_violation": True,
+                "n": 0, "executed": 0, "failures": ["timeout"]}
+    out = (proc.stdout or "").strip().splitlines()
+    if not out:
+        return {"passed": False, "valid": False, "reason": "missing runner result",
+                "security_violation": proc.returncode == 0, "n": 0, "executed": 0,
+                "failures": ["missing runner result"]}
+    result = None
+    for line in reversed(out):
         try:
-            obj = json.loads(line)
+            candidate = json.loads(line)
         except Exception:
             continue
-        if isinstance(obj, dict) and obj.get("nonce") == nonce:
-            return bool(obj.get("passed"))
-    return False
+        if candidate.get("nonce") == nonce:
+            result = candidate
+            break
+    if result is None:
+        return {"passed": False, "valid": False, "reason": "runner nonce mismatch",
+                "security_violation": True, "n": 0, "executed": 0,
+                "failures": ["runner nonce mismatch"]}
+    if proc.returncode != 0:
+        result.update({"passed": False, "valid": False, "reason": "runner nonzero exit",
+                       "security_violation": True})
+    result.pop("nonce", None)
+    return result
+
+
+def _run_suite_local(impl_src: str, suite_src: str, timeout: float = 4.0) -> bool:
+    """True iff the suite PASSES against this implementation (local subprocess)."""
+    return bool(_run_suite_local_result(impl_src, suite_src, timeout).get("passed"))
 
 
 def _run_suite_once(impl_src: str, suite_src: str, timeout: float = 4.0) -> bool:
@@ -170,6 +210,23 @@ def _run_suite_once(impl_src: str, suite_src: str, timeout: float = 4.0) -> bool
         import modal_runner
         return modal_runner.run_suite_once(impl_src, suite_src, timeout)
     return _run_suite_local(impl_src, suite_src, timeout)
+
+
+def _run_suite_once_result(impl_src: str, suite_src: str, timeout: float = 4.0) -> dict:
+    """Structured suite result while preserving sandbox routing."""
+    runner = os.environ.get("REWARDFORGE_RUNNER", "local")
+    if runner == "local":
+        return _run_suite_local_result(impl_src, suite_src, timeout)
+    passed = _run_suite_once(impl_src, suite_src, timeout)
+    return {
+        "passed": passed,
+        "valid": passed,
+        "reason": "ok" if passed else "failed",
+        "security_violation": False,
+        "n": 0,
+        "executed": 0,
+        "failures": [] if passed else ["failed"],
+    }
 
 
 def _eval_signature(impl_src: str, func: str, inputs: list, timeout: float = 4.0) -> list:
@@ -707,12 +764,29 @@ def score_suite(module_id: str, suite_src: str):
     """Reward = (#mutants killed / #mutants) gated by passing reference + equivalents."""
     viol = _suite_security_violation(suite_src)
     if viol:  # untrusted suite tried to escape / read hidden state / forge the verdict
-        return 0.0, {"gate": False, "reason": "security_violation", "detail": viol}
+        return 0.0, {
+            "gate": False,
+            "reason": "security_violation",
+            "detail": viol,
+            "gate_failed_on": "security_preflight",
+            "security_violation": True,
+            "valid": False,
+        }
     m = MODULES[module_id]
     gate_impls = [m["reference"]] + m["equivalents"]
-    for impl in gate_impls:
-        if not _run_suite_once(impl, suite_src):
-            return 0.0, {"gate": False, "reason": "suite fails reference or an equivalent refactor"}
+    for idx, impl in enumerate(gate_impls):
+        label = "reference" if idx == 0 else f"equivalent_{idx - 1}"
+        result = _run_suite_once_result(impl, suite_src)
+        if not result.get("passed"):
+            return 0.0, {
+                "gate": False,
+                "reason": f"suite fails {label}: {result.get('reason', 'failed')}",
+                "gate_failed_on": label,
+                "security_violation": bool(result.get("security_violation")),
+                "valid": bool(result.get("valid")),
+                "test_count": int(result.get("n") or 0),
+                "executed_count": int(result.get("executed") or 0),
+            }
     pool = get_mutant_pool(module_id)
     if not pool:
         return 0.0, {"gate": True, "mutants": 0}
