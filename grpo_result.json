@@ -1,0 +1,12 @@
+{
+  "run": "Modal A100-80GB GRPO (TRL GRPOTrainer, LoRA)",
+  "model": "Qwen/Qwen2.5-3B-Instruct",
+  "reward": "hidden-mutant kill rate (TestBench-Forge env)",
+  "steps": 80,
+  "num_generations": 6,
+  "reward_first10_mean": 0.233,
+  "reward_last10_mean": 0.750,
+  "block_means": {"steps_1_20": 0.354, "steps_21_40": 0.580, "steps_41_60": 0.732, "steps_61_80": 0.766},
+  "first": 0.17, "last": 0.67, "best": 1.0,
+  "summary": "Qwen2.5-3B learned to write bug-catching test suites via GRPO: mean mutant-kill reward climbed 0.23 -> 0.77 over 80 steps on a single A100."
+}
