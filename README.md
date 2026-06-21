@@ -99,7 +99,7 @@ flowchart TD
 
 | Question | TestBench-Forge answer |
 | --- | --- |
-| Can a judge verify the reward in seconds? | **Yes** — `python3 selftest.py` runs on system Python, no venv / key / GPU: lazy **0.62**, thorough **1.00**, `assert False` **0.00**. |
+| Can a judge verify the reward in seconds? | **Yes** — `python3 src/selftest.py` runs on system Python, no venv / key / GPU: lazy **0.62**, thorough **1.00**, `assert False` **0.00**. |
 | Is the reward gameable? | **No** — we broke it ourselves (a frame-walk exploit faked a perfect 1.0), then fixed it; **12/12** attacks now score 0 while legitimate suites stay 1.0 (`security_checks.py`). |
 | Does the trained skill generalize? | **Yes** — held-out mean **0.23 → 0.79** on 3 modules never trained on. You don't label outputs; you train the **grader**, and the grading transfers — the RSI thesis made concrete. |
 | Is it an environment, not an eval? | **Yes** — dense verifiable reward, infinite AST-generated data, and an on-policy GRPO run already executed end-to-end on a single A100. |
@@ -130,17 +130,17 @@ A judge can also verify the whole signal directly with **system `python3` — no
 
 ```bash
 git clone https://github.com/jenilkathrotia/YC---RL-Gym && cd YC---RL-Gym
-python3 selftest.py          # the signal:    lazy 0.621 · thorough 1.000 · assert-False 0.000
-python3 security_checks.py   # the cheat-proof: 12 adversarial attacks all 0.000 · legit suite 1.000
-python3 stage_a_checks.py    # 5 more regression tests
+python3 src/selftest.py          # the signal:    lazy 0.621 · thorough 1.000 · assert-False 0.000
+python3 src/security_checks.py   # the cheat-proof: 12 adversarial attacks all 0.000 · legit suite 1.000
+python3 src/stage_a_checks.py    # 5 more regression tests
 ```
 
 Event-day (needs deps / keys / GPU):
 
 ```bash
-modal run modal_grpo.py      # train Qwen2.5-3B with GRPO on a single A100 (LoRA r=16)
-modal run dump_suites.py     # reload the saved adapter, re-measure held-out at n=16
-hud eval tasks.py claude     # baseline a frontier model through the HUD gateway
+modal run src/modal_grpo.py      # train Qwen2.5-3B with GRPO on a single A100 (LoRA r=16)
+modal run src/dump_suites.py     # reload the saved adapter, re-measure held-out at n=16
+hud eval src/tasks.py claude     # baseline a frontier model through the HUD gateway
 ```
 
 ## Validated numbers

@@ -85,4 +85,4 @@ draws itself 0.17 → 1.0, train-module bars fill.
   Fireworks RFT was billing-blocked at the time; the verified headline is the Modal run.
 - If short on time, cut Beat 1's suite-diff and the train-module bars; keep the attack-flip and the
   held-out curve (those are the two strongest visuals).
-- Backup proof, no slides: a terminal running `python3 selftest.py` and `python3 security_checks.py`.
+- Backup proof, no slides: a terminal running `python3 src/selftest.py` and `python3 src/security_checks.py`.

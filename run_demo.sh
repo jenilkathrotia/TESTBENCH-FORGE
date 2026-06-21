@@ -12,7 +12,7 @@ echo "  Reward = fraction of HIDDEN mutants the agent's tests kill."
 echo "  No LLM judge. Pure execution. A judge can re-run this now."
 echo "════════════════════════════════════════════════════════════"
 echo
-"$PY" selftest.py
+"$PY" src/selftest.py
 echo
 echo "  → lazy suite 0.62 · thorough 1.00 · assert-False 0.00"
 pause
@@ -24,7 +24,7 @@ echo "  scored a FAKE 1.0 against our first version. We found it and"
 echo "  fixed it — import allowlist + frame isolation. Now: all 0."
 echo "════════════════════════════════════════════════════════════"
 echo
-"$PY" security_checks.py
+"$PY" src/security_checks.py
 echo
 echo "  (git log shows it: commit 0c5dc29 'red-team found a 1.0 bypass')"
 pause

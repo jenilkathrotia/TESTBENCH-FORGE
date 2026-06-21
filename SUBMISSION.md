@@ -23,7 +23,7 @@ A judge can clone the repo and run it with **system `python3` — no venv, no pi
 
 ```bash
 git clone https://github.com/jenilkathrotia/YC---RL-Gym && cd YC---RL-Gym
-python3 selftest.py        # lazy suite 0.621 · thorough 1.000 · assert-False 0.000
+python3 src/selftest.py        # lazy suite 0.621 · thorough 1.000 · assert-False 0.000
 ```
 
 A lazy happy-path suite scores **0.621**; a thorough edge-case suite **1.000**; `assert False` or a no-test suite → **0.000** (fails the reference gate). Every module reaches a clean 1.0 ceiling because mutants are differentially filtered to the **non-equivalent (killable)** set. The reward is a subprocess execution oracle — nothing to argue with.
@@ -34,10 +34,10 @@ The suite is **untrusted code**. Most RL-environment submissions never test whet
 We fixed it: an **import allowlist** (a denylist is a sieve), **frame isolation** (the impl source is deleted before the suite runs), and a **nonce-authenticated verdict** (a forged `{"passed": true}` ledger is ignored). Two independent red-team passes now find no bypass (≈9/10 confidence).
 
 ```bash
-python3 security_checks.py   # 12 adversarial attacks all 0.000 · legit suite 1.000
+python3 src/security_checks.py   # 12 adversarial attacks all 0.000 · legit suite 1.000
 ```
 
-Forged ledger · `SystemExit` short-circuit · `inspect`/`operator.attrgetter` frame-walk · `__subclasses__` gadget · `import os`/`import testbench` oracle · `__del__` finalizer · `eval` — **all score 0**, while legitimate suites are unaffected. `python3 stage_a_checks.py` adds 5 more regression tests.
+Forged ledger · `SystemExit` short-circuit · `inspect`/`operator.attrgetter` frame-walk · `__subclasses__` gadget · `import os`/`import testbench` oracle · `__del__` finalizer · `eval` — **all score 0**, while legitimate suites are unaffected. `python3 src/stage_a_checks.py` adds 5 more regression tests.
 
 ## 3 · Generalizing verifier  *(the RSI signal)*
 We trained Qwen2.5-3B with **GRPO on a single Modal A100** (LoRA r=16) on **7 modules**, then evaluated on **3 modules it never trained on**:
@@ -50,7 +50,7 @@ We trained Qwen2.5-3B with **GRPO on a single Modal A100** (LoRA r=16) on **7 mo
 | `roman_to_int` (held-out) | 0.13 → **0.71** |
 | `is_balanced` (held-out) | 0.25 → **0.73** |
 
-The skill — *write correct, boundary/edge-case tests that kill bugs* — **transferred to tasks it never saw**. That's the RSI thesis made concrete: you don't label outputs, you train the **grader**, and the grading generalizes. (KL ≈ 0.012; completion length 269 → 160 tokens — it caught *more* bugs with *fewer* tokens, the opposite of reward-hacking by padding.) Reproduce: `modal run modal_grpo.py` to train; `modal run dump_suites.py` to reload the saved adapter and re-measure.
+The skill — *write correct, boundary/edge-case tests that kill bugs* — **transferred to tasks it never saw**. That's the RSI thesis made concrete: you don't label outputs, you train the **grader**, and the grading generalizes. (KL ≈ 0.012; completion length 269 → 160 tokens — it caught *more* bugs with *fewer* tokens, the opposite of reward-hacking by padding.) Reproduce: `modal run src/modal_grpo.py` to train; `modal run src/dump_suites.py` to reload the saved adapter and re-measure.
 
 **How it's measured (honest):** the held-out figure is the **reproducible** one — reload the saved adapter and sample **n=16 per module** (the in-training n=5 eval agreed on the trained side: 0.38 → 0.77). The per-suite spread is real and informative: the **base** model passes the correctness gate on only ~2–5 of 16 tries — it keeps writing a *wrong* assertion the gate rejects — while the **trained** model passes on 12–15 and writes thorough suites. See the literal base-vs-trained suites in the interactive demo (**`./run.sh`** → `web/`).
 
@@ -76,8 +76,8 @@ The skill — *write correct, boundary/edge-case tests that kill bugs* — **tra
 ## Run it
 ```bash
 git clone https://github.com/jenilkathrotia/YC---RL-Gym && cd YC---RL-Gym
-python3 selftest.py          # the signal (no setup)
-python3 security_checks.py   # the cheat-proof (no setup)
-python3 stage_a_checks.py    # regression suite (no setup)
-# event-day (needs deps/keys/GPU): modal run modal_grpo.py
+python3 src/selftest.py          # the signal (no setup)
+python3 src/security_checks.py   # the cheat-proof (no setup)
+python3 src/stage_a_checks.py    # regression suite (no setup)
+# event-day (needs deps/keys/GPU): modal run src/modal_grpo.py
 ```
