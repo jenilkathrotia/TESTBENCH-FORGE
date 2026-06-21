@@ -43,9 +43,9 @@ def run_module(client, module_id, n=1):
 
 
 def main():
-    from fireworks import Fireworks  # imported here so the file loads without the SDK
+    from fireworks.client import Fireworks  # fireworks-ai SDK (client lives under .client)
 
-    client = Fireworks()  # reads FIREWORKS_API_KEY
+    client = Fireworks(api_key=os.environ.get("FIREWORKS_API_KEY"))
     print(f"model={MODEL}  best-of-{BEST_OF_N}\n")
     rates = []
     for module_id in testbench.MODULES:
