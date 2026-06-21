@@ -1,74 +1,138 @@
 # TestBench-Forge
 
-**An RL gym that trains agents to write the test suite that catches the most bugs** — rewarded by how many hidden, freshly-injected bugs (mutants) their tests kill.
+<p align="center">
+  <strong>Train the test that catches the bug a human reviewer misses.</strong>
+</p>
 
-> The thesis: recursive self-improvement is bottlenecked on *trustworthy verification*. The scarcest verifier of all is a **test suite that isn't fooled by a bug that passes the easy cases.** TestBench-Forge trains models to write exactly that — and proves it by mutation testing: run the suite over a hidden pool of buggy variants and count the kills.
+<p align="center">
+  An RL gym that trains agents to write the pytest suite that kills the most hidden, freshly-injected bugs (mutants) — rewarded by a pure execution oracle we <strong>proved you can't game</strong>, and whose verification skill <strong>generalizes to modules it never saw</strong>.
+</p>
 
-Track fit: **Agentic Collaboration** (the pytest variant you present) with a **Chip Design** moat (the same gym ports to Verilog testbenches — mention it, build software).
+<p align="center">
+  HUD × YC — Frontier RL Environments Hackathon · Track: <strong>Agentic Collaboration</strong> · wedge: Chip Design
+</p>
 
-## Status (what's proven, honestly)
-- ✅ **Verifiable, non-gameable environment** — 10 modules, hidden mutants, automatic kill-rate reward (no LLM judge).
-- ✅ **Reproducible discrimination (no API key):** a lazy suite scores **0.62**, a thorough suite **1.0**, `assert False` → **0** (`python selftest.py`).
-- ✅ **Real models scored live through it:** Qwen3-8B **0.90**, Claude (HUD gateway) **0.60**.
-- ✅ **RL training completed, with held-out generalization** — trained Qwen2.5-3B with GRPO on a single A100 (Modal, `modal_grpo.py`) on **7 modules**, evaluated on **3 modules it never trained on**. Mean mutant-kill rate: train modules **0.11 → 0.91**; **held-out (unseen) 0.23 → 0.79** — reproducible at **n=16** by reloading the saved adapter (`binary_search` **0.31 → 0.93**, `roman_to_int` 0.13 → 0.71, `is_balanced` 0.25 → 0.73). That's a *transferable* test-writing skill, not memorization (KL < 0.05; completions got shorter, not padded). The literal base-vs-trained suites are in `demo_suites.html`. See `TRAINING_STATS.md` + `grpo_result.json` + `suites_heldout.json`.
-- ✅ **Cheat-proofed reward (adversarially proven):** the suite is untrusted code, so the runner authenticates its verdict with a per-call nonce and an AST guard rejects sandbox escapes. Forging a `{"passed": true}` stdout ledger, short-circuiting with `SystemExit`, or reading the hidden mutants via frame/`__subclasses__`/`inspect` introspection **all score 0** — while legitimate suites are unaffected (`python security_checks.py`).
+<p align="center">
+  <img alt="Python" src="https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white">
+  <img alt="Reward" src="https://img.shields.io/badge/Reward-execution_oracle-16A34A?style=for-the-badge">
+  <img alt="pytest" src="https://img.shields.io/badge/pytest-suites_under_test-0A9EDC?style=for-the-badge&logo=pytest&logoColor=white">
+  <img alt="HUD" src="https://img.shields.io/badge/HUD-RL_environment-6E56CF?style=for-the-badge">
+  <img alt="Fireworks" src="https://img.shields.io/badge/Fireworks-GRPO_RFT-FF6A00?style=for-the-badge">
+  <img alt="Modal" src="https://img.shields.io/badge/Modal-A100_training-7C4DFF?style=for-the-badge">
+  <img alt="Daytona" src="https://img.shields.io/badge/Daytona-untrusted_sandbox-4D7CFE?style=for-the-badge">
+  <img alt="Anthropic" src="https://img.shields.io/badge/Anthropic-Claude_baseline-D4A27F?style=for-the-badge&logo=anthropic&logoColor=white">
+</p>
+
+> **The thesis.** Recursive self-improvement is bottlenecked on *trustworthy verification*. As agents do more autonomous work, the binding constraint isn't generation — it's a grader you can trust. An LLM-judge reward is itself gameable, so the only durable RL signal is an **execution oracle**. We built one for test-writing, **hardened it by attacking it ourselves**, and showed the verification skill it trains **generalizes to tasks it never saw**.
+
+## Headline result
+
+| Metric | Result |
+| --- | --- |
+| Held-out kill-rate — 3 modules **never trained on**, reproducible at n=16 | **0.23 → 0.79** |
+| `binary_search` (held-out) | **0.31 → 0.93** |
+| Train modules (7), in-training n=5 | **0.11 → 0.91** |
+| Adversarial cheat attacks defeated (we broke our own reward, then fixed it) | **12 / 12 → score 0** |
+| Zero-setup signal, no API key — lazy suite vs thorough suite | **0.62 vs 1.00** |
+
+> We trained a model to write the test that catches the bug a human reviewer misses — scored only by bugs it has **never seen**.
 
 ## The loop
 
-1. Agent sees a module + its **reference implementation**.
-2. It writes a **pytest-style test suite** (functions named `test_*`).
-3. The harness runs the suite against a **hidden pool of mutants** (buggy variants).
-4. **Reward = #mutants killed / #mutants**, gated by the suite passing the reference + behavior-equivalent refactors (the over-specification penalty).
+1. The agent sees a **module + its reference implementation**.
+2. It writes a **pytest-style test suite** (`test_*` functions).
+3. The harness runs the suite against a **hidden pool of mutants** (buggy variants of the reference).
+4. **Reward = #mutants killed / #mutants**, gated by the suite first passing the reference **and** behavior-equivalent refactors (the over-specification gate). **No LLM judge — a pure execution oracle.**
+
+```mermaid
+flowchart LR
+  A["Module + reference impl"] --> B["Agent writes<br/>pytest suite"]
+  B --> G{"Passes reference<br/>+ refactors?"}
+  G -- "no" --> Z["Reward = 0"]
+  G -- "yes" --> M["Run suite vs<br/>hidden mutant pool"]
+  M --> R["Reward =<br/>mutants killed / total"]
+```
 
 ## Why it's a strong RL environment (not an eval)
 
 - **Multi-signal, verifiable reward** with a clean execution oracle — no LLM judge anywhere.
-- **Non-gameable** (validated): `assert False` → fails the reference gate → **0**; mutants are never shown, so you can't target them — *you cannot fake killing a bug you've never seen*; the over-spec gate kills brittle snapshot tests. The suite runs as **untrusted code**: a per-call **nonce** authenticates the runner verdict (a forged stdout ledger is ignored) and an **AST guard** rejects frame/`__subclasses__`/`inspect`/`os`/`eval` escapes → **0**. All proven in `security_checks.py`.
-- **Infinite data**: AST mutation operators auto-generate buggy variants × unlimited modules. Mutants are differentially filtered against the reference so the pool is all **non-equivalent** (killable) — giving a clean 1.0 ceiling.
+- **Non-gameable, and we proved it** — you cannot fake killing a bug you've never seen, and you cannot read the hidden bug out of the harness (we tried, and closed the hole).
+- **Infinite data** — AST mutation operators × unlimited modules, differentially filtered to a clean killable 1.0 ceiling.
+- **Generalizes** — a transferable verification skill, not module-specific memorization.
 
-## Files
+## Architecture
 
-| file | what | touched? |
-|---|---|---|
-| `testbench.py` | **10 modules** + reference impls, **AST mutation engine**, differential filter, suite-runner dispatch, kill-rate scorer, prompt | the new core |
-| `env.py` | HUD `forge_testbench` template + `run_tests` MCP tool (gate-only dry-run) | + template |
-| `reward.py` | **Fireworks Eval Protocol adapter**: wraps `score_suite` as an `@reward_function` (imports without the SDK via shims) | new |
-| `testbench_eval_protocol.py` | Eval Protocol `@evaluation_test` entries: local fixture plus Fireworks RFT rollout evaluator | new |
-| `build_dataset.py` | emits `dataset.jsonl` (prompt + `ground_truth.module_id`, plus legacy `ground_truth_for_eval`) for RFT | new |
-| `fireworks_baseline.py` | raw baseline / best-of-N runner via the Fireworks inference SDK | new |
-| `daytona_runner.py` | Daytona sandbox runner for untrusted code (`REWARDFORGE_RUNNER=daytona`) | new |
-| `modal_runner.py` | Modal parallel-scoring + GPU entrypoint (`REWARDFORGE_RUNNER=modal`) | new |
-| `demo.py` → `demo.html` | bug-kill-meter dashboard; reveals the **saved** base→trained before/after from `grpo_result.json` (not live inference) | new |
-| `selftest.py` | proves weak→thorough kill-rate headroom + non-gameability, **no API key** | updated |
-| `security_checks.py` | **adversarial cheat-proof**: forged-ledger / `SystemExit` / introspection / `os`·`eval` escapes all score 0; legit suite intact, **no API key** | new |
-| `dump_suites.py` → `suites_heldout.json` | inference-only Modal job: reloads the saved adapter and captures the **real** base-vs-trained suites + n=16 kill rates on held-out modules | new |
-| `demo_suites.py` → `demo_suites.html` | renders those **literal** base-vs-trained suites side by side — the witnessed before/after (not an illustration) | new |
-| `tasks.py` | the 10 modules under test for `hud eval` | updated |
-| `scorer.py` | (legacy verifier scoring; unused by this task) | unchanged |
+| Layer | Stack | Role |
+| --- | --- | --- |
+| Environment | HUD `forge_testbench` template + `run_tests` MCP tool | Serves a module + reference impl; exposes a gate-only dry-run for the agent |
+| Mutation engine | Python AST operators (`testbench.py`) | Auto-generates buggy variants; a differential filter keeps only **non-equivalent (killable)** mutants |
+| Reward oracle | Subprocess suite runner · nonce-authenticated verdict · AST import guard | Runs the agent's suite vs the hidden mutant pool; reward = kills / total — **no LLM judge** |
+| Untrusted execution | Daytona / Modal sandbox (`REWARDFORGE_RUNNER`) | Isolates the agent's test code *and* the mutants as untrusted code |
+| Training | Modal A100 · GRPO/LoRA (`modal_grpo.py`) · Fireworks Eval-Protocol RFT (`reward.py`) | Trains an open model on the dense kill-rate reward |
+| Baselines | Claude + Qwen via HUD gateway | Frontier before/after comparison |
+
+```mermaid
+flowchart TD
+  subgraph Env["HUD · forge_testbench environment"]
+    T["10 modules + reference impls"]
+    Mut["AST mutation engine"]
+    Filt["Differential filter<br/>(non-equivalent / killable set)"]
+    Run["Sandboxed suite runner<br/>nonce-auth verdict + AST guard"]
+    Or["Kill-rate reward oracle<br/>(no LLM judge)"]
+  end
+  subgraph Sbx["Untrusted execution"]
+    Day["Daytona / Modal sandbox"]
+  end
+  subgraph Train["Training & baselines"]
+    Mod["Modal A100 · GRPO (LoRA r=16)"]
+    Fw["Fireworks Eval-Protocol RFT"]
+    Base["Claude · Qwen baselines<br/>(HUD gateway)"]
+  end
+  T --> Mut --> Filt --> Run --> Or
+  Run -. "untrusted code" .-> Day
+  Or --> Mod
+  Or --> Fw
+  Base --> Or
+```
+
+## What it proves
+
+| Question | TestBench-Forge answer |
+| --- | --- |
+| Can a judge verify the reward in seconds? | **Yes** — `python3 selftest.py` runs on system Python, no venv / key / GPU: lazy **0.62**, thorough **1.00**, `assert False` **0.00**. |
+| Is the reward gameable? | **No** — we broke it ourselves (a frame-walk exploit faked a perfect 1.0), then fixed it; **12/12** attacks now score 0 while legitimate suites stay 1.0 (`security_checks.py`). |
+| Does the trained skill generalize? | **Yes** — held-out mean **0.23 → 0.79** on 3 modules never trained on. You don't label outputs; you train the **grader**, and the grading transfers — the RSI thesis made concrete. |
+| Is it an environment, not an eval? | **Yes** — dense verifiable reward, infinite AST-generated data, and an on-policy GRPO run already executed end-to-end on a single A100. |
+
+## Sponsor integrations
+
+| Sponsor | Integrated as | Role & honest status |
+| --- | --- | --- |
+| **Modal** | Serverless A100 + parallel sandbox | Where the GRPO run **actually trained**; the LoRA adapter lives on a Modal volume. ✅ core, real |
+| **HUD** | `forge_testbench` env template + gateway | The environment itself; frontier baselines via the gateway (Qwen3-8B **0.90**, Claude **0.60**). ✅ env + baselines |
+| **Fireworks** | Eval-Protocol RFT handoff | `reward.py` + `testbench_eval_protocol.py` wired; best-of-1 inference baseline **0.487** (incl. gate failures). 🟡 wired; RFT launch blocked on billing |
+| **Daytona** | Untrusted-code sandbox | `daytona_runner.py` (`REWARDFORGE_RUNNER=daytona`) isolates suites + mutants. ⚪ present |
+| **Anthropic** | Claude frontier baseline | Claude as the before/after reference model. 🔵 baseline |
+
+> Training landed on **Modal** because HUD's training backend hit capacity limits and Fireworks RFT was billing-blocked — so the verified result is Modal-led. We present what's real.
 
 ## Run it
 
+A judge can verify the whole signal with **system `python3` — no venv, no pip install, no API key, no GPU:**
+
 ```bash
-cd ~/Downloads/YC---RL-Gym          # the project's own folder (outside JaanHealth)
-source .venv/bin/activate           # turn on the project's tools
+git clone https://github.com/jenilkathrotia/YC---RL-Gym && cd YC---RL-Gym
+python3 selftest.py          # the signal:    lazy 0.621 · thorough 1.000 · assert-False 0.000
+python3 security_checks.py   # the cheat-proof: 12 adversarial attacks all 0.000 · legit suite 1.000
+python3 stage_a_checks.py    # 5 more regression tests
+```
 
-# 1. validate the signal — NO API key needed
-.venv/bin/python selftest.py
-#    => 10 modules, weak mean 0.62 vs thorough 1.00 (clean ceiling); assert-False => 0.0;
-#       thorough suite catches the bracket-type bug the weak one misses.
+Event-day (needs deps / keys / GPU):
 
-# 2. build the demo dashboard (open demo.html — reveals the saved base->trained result)
-.venv/bin/python demo.py
-
-# 3. keys
-hud login                                # HUD_API_KEY -> ~/.hud/.env
-hud set ANTHROPIC_API_KEY=sk-ant-...
-
-# 4. baseline eval across the modules
-hud eval tasks.py claude
-
-# (optional) execute untrusted code in a real sandbox instead of a local subprocess:
-#   export REWARDFORGE_RUNNER=daytona     # or: modal
+```bash
+modal run modal_grpo.py      # train Qwen2.5-3B with GRPO on a single A100 (LoRA r=16)
+modal run dump_suites.py     # reload the saved adapter, re-measure held-out at n=16
+hud eval tasks.py claude     # baseline a frontier model through the HUD gateway
 ```
 
 ## Validated numbers
@@ -87,75 +151,30 @@ run_length_encode    14     0.929    1.000
 gcd                   1     1.000    1.000
 mean (10 modules)           0.621    1.000   <- the live RFT demo arc
 ```
-Every module reaches a clean **1.000** ceiling (all mutants killable); `assert False` and
-no-test suites score **0.0** (fail the reference gate).
 
-## Training (Fireworks RFT/GRPO)
+Every module reaches a clean **1.000** ceiling (all mutants killable); `assert False` and no-test suites score **0.0** (fail the reference gate). Training health: KL ≈ **0.012**, completion length **269 → 160 tokens** — it caught *more* bugs with *fewer* tokens, the opposite of reward-hacking by padding.
 
-The same `score_suite` both evaluates and trains through `reward.py` and `testbench_eval_protocol.py`.
+## View
 
-```bash
-pip install fireworks-ai eval-protocol       # into the venv
-export FIREWORKS_API_KEY=fw-...
+| Resource | Link |
+| --- | --- |
+| Full judge-facing writeup | [`SUBMISSION.md`](SUBMISSION.md) |
+| Literal base → trained suites (witnessed, not illustrative) | [`demo_suites.html`](demo_suites.html) |
+| Training curve + health + honest caveats | [`TRAINING_STATS.md`](TRAINING_STATS.md) |
+| Bug-kill-meter dashboard | [`demo.html`](demo.html) |
+| Demo video | Coming soon |
 
-# 1. raw baseline sample with the inference SDK: gate-failed suites count as 0.0
-.venv/bin/python fireworks_baseline.py            # BEST_OF_N=4 for best-of-N, FW_TIMEOUT caps slow calls
+## Files
 
-# 2. build the RFT dataset
-.venv/bin/python build_dataset.py                 # -> dataset.jsonl
-
-# 3. sanity-check the evaluator locally
-eval-protocol local-test --entry testbench_eval_protocol.py::test_testbench_forge_fixture --ignore-docker -y
-
-# 4. upload evaluator and dataset
-eval-protocol upload --entry testbench_eval_protocol.py::test_testbench_forge_rft --force -y
-firectl dataset create testbench-forge-dataset dataset.jsonl
-
-# 5. dry-run RFT
-eval-protocol create rft --dry-run -y --skip-validation \
-  --dataset testbench-forge-dataset \
-  --evaluator testbench-eval-protocol-test-testbench-forge-rft \
-  --training-config-base-model accounts/fireworks/models/gpt-oss-120b \
-  --training-config-output-model testbench-forge-rft \
-  --training-config-epochs 1 \
-  --max-concurrent-rollouts 4 \
-  --max-concurrent-evaluations 4 \
-  --inference-parameters-response-candidates-count 4 \
-  --inference-parameters-temperature 0.8 \
-  --inference-parameters-max-output-tokens 4096
-```
-
-The Fireworks baseline artifact is a raw score sample, not the held-out GRPO result. A best-of-1 run with gate failures is useful for plumbing and diagnostics, but should not be presented as a stable base-model capability without repeated seeds and confidence intervals.
-
-## Sponsor stack ($1,075; the full $950 trio)
-
-| sponsor | $ | role in TestBench-Forge |
-|---|---|---|
-| **HUD** | 200 | host; the `forge_testbench` template *is* the env |
-| **Fireworks** | 500 | **GRPO/RFT** — train an open model to write higher-kill-rate suites; the dense kill-rate reward is GRPO-ideal (the centerpiece) |
-| **Modal** | 250 | serverless GPU + parallel sandboxed execution of suites × mutants (embarrassingly parallel) |
-| **Daytona** | 100 | isolated sandboxes for running untrusted agent test code AND untrusted mutants — **load-bearing here** |
-| **Anthropic** | 25 | Claude as the frontier baseline in the before/after |
-
-## The demo
-
-Split-screen, one module (`is_balanced`). The **bug-kill meter** climbs as the model trains. Base model writes a happy-path suite → kills **~50%**, and live it **fails to catch** the bug that accepts `(]`. The RFT'd model writes boundary/edge tests → **100%**, catches it. Diff on screen: *"this bug slipped past the base model's tests; the trained model's tests caught it."* Fallback: pre-recorded curve.
-
-> "We trained a model to write the test that catches the bug a human reviewer misses — scored only by bugs it has never seen."
-
-## 24h plan
-
-| block | goal |
-|---|---|
-| **0–3h** | ✅ done — mutation engine, differential filter, suite runner, 4 modules; `selftest` proves headroom + non-gameability + clean 1.0 ceiling. |
-| **3–7h** | baseline eval (`hud eval tasks.py claude` + base open model); confirm Fireworks Eval Protocol wraps `score_suite` identically; add 4–6 more modules for training volume. |
-| **7–15h** | kick off Fireworks GRPO/RFT on Modal — dense reward + fast eval = many episodes overnight; stream the bug-kill curve into the demo dashboard. |
-| **15–22h** | route `_run_suite_once` through a Daytona/Modal sandbox (the untrusted-code prize moment); pull the checkpoint, held-out eval for the "after" number. |
-| **22–24h** | rehearse the split-screen kill-meter demo; fallback = best-of-N suites with kill-rate as selector. |
-
-## Notes / stretch
-
-- **Python 3.12** (hud-python needs `>=3.11,<3.13`); the venv is pinned.
-- **Determinism** via `hashlib` seeds — the mutant pool is fixed at eval time so before/after is comparable. (Regenerate fresh mutants per episode during *training* as an anti-overfit measure.)
-- **Verilog portability** is the moat: same gym, mutants = injected RTL faults, kill = a failing assertion in simulation. Present software; pitch hardware.
-- **Stretch:** richer subtle mutants (lower the base kill rate for a more dramatic curve); multi-turn variant (agent adds tests over turns with coverage feedback).
+| File | What |
+| --- | --- |
+| `testbench.py` | 10 modules + reference impls, **AST mutation engine**, differential filter, suite-runner dispatch, kill-rate scorer |
+| `env.py` | HUD `forge_testbench` template + `run_tests` MCP tool (gate-only dry-run) |
+| `reward.py` · `testbench_eval_protocol.py` | Fireworks Eval-Protocol adapter — wraps `score_suite` as an `@reward_function` / RFT rollout evaluator |
+| `security_checks.py` · `stage_a_checks.py` | Adversarial cheat-proof: forged-ledger / `SystemExit` / frame-walk / `__subclasses__` / `os`·`eval` escapes all score 0; legit suite intact |
+| `modal_grpo.py` · `dump_suites.py` | Modal A100 GRPO training; inference-only adapter reload that captures the held-out base-vs-trained suites at n=16 |
+| `daytona_runner.py` · `modal_runner.py` | Sandbox runners for executing untrusted code (`REWARDFORGE_RUNNER=daytona` / `modal`) |
+| `fireworks_baseline.py` · `build_dataset.py` | Raw baseline / best-of-N runner; emits `dataset.jsonl` for RFT |
+| `selftest.py` | Proves weak→thorough kill-rate headroom + non-gameability, **no API key** |
+| `demo.py` → `demo.html` · `demo_suites.py` → `demo_suites.html` | Bug-kill-meter dashboard; renders the literal witnessed base→trained suites side by side |
+| `tasks.py` | The 10 modules under test for `hud eval` |
