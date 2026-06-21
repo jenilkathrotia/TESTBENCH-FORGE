@@ -22,6 +22,9 @@ Verified outputs from this run:
 - Fake stdout pass ledger, `SystemExit`, and frame/import escapes score 0.
 - Known-good suite false-positive rate: 0.
 - Modal GRPO reward artifact: first-10 mean 0.233 to last-10 mean 0.750 over 80 steps on Qwen2.5-3B with TRL GRPO and LoRA.
+- Fireworks live baseline: `accounts/fireworks/models/gpt-oss-120b`, best-of-1, mean kill rate 0.487 (`fireworks_results.json`).
+- Eval Protocol RFT handoff: local fixture passed, evaluator `testbench-eval-protocol-test-testbench-forge-rft` ACTIVE, dataset `testbench-forge-dataset` READY, dry-run passed.
+- Modal fresh smoke: 4 GRPO steps on A100 completed, best reward 0.477 (`modal_grpo_result.json`).
 
 ## Demo Steps
 
@@ -43,9 +46,8 @@ Click **Reveal a thorough suite**. The dashboard is labeled honestly:
 
 ## Blocked Items
 
-- HUD deploy and HUD eval need `HUD_API_KEY`.
-- Fireworks RFT and best-of-N baseline need `FIREWORKS_API_KEY`.
-- A fresh Modal rerun needs Modal auth/credits, but the real artifact is already checked in.
+- Fireworks RFT launch is blocked by billing: API call reaches Fireworks but returns `payment method is required`.
+- HUD gateway eval works, but HUD training smoke is blocked by Tinker active-session and upstream-overload errors.
 - Live base-vs-best-of-N-vs-trained held-out eval is not available yet. Do not claim it.
 
 ## Files To Review
@@ -53,5 +55,7 @@ Click **Reveal a thorough suite**. The dashboard is labeled honestly:
 - `testbench.py`: runner hardening, mutation engine, refactor gate, MS* scorer with suite-size control.
 - `stage_a_checks.py`: no-key Stage A regression checks.
 - `eval_bench.py`: offline report and Modal curve summary.
+- `testbench_eval_protocol.py`: Fireworks Eval Protocol evaluator.
+- `external_status.json`: latest external-provider status.
 - `demo.py` and `demo.html`: honest dashboard.
 - `README.md`, `CHEATSHEET.md`, `docs/plans/PROGRESS.md`: updated claims and instructions.

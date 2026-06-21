@@ -1,0 +1,33 @@
+{
+  "model": "Qwen/Qwen2.5-3B-Instruct",
+  "gpu": "A100-80GB",
+  "smoke": true,
+  "modules": [
+    "merge_intervals",
+    "is_balanced",
+    "two_sum"
+  ],
+  "num_generations": 4,
+  "max_steps": 4,
+  "curve": [
+    {
+      "step": 1,
+      "reward": 0.18892857432365417
+    },
+    {
+      "step": 2,
+      "reward": 0.0
+    },
+    {
+      "step": 3,
+      "reward": 0.47749999165534973
+    },
+    {
+      "step": 4,
+      "reward": 0.0
+    }
+  ],
+  "first_reward": 0.18892857432365417,
+  "last_reward": 0.0,
+  "best_reward": 0.47749999165534973
+}

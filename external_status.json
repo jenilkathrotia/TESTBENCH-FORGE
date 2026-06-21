@@ -1,0 +1,64 @@
+{
+  "created_at": "2026-06-21T09:20:00Z",
+  "local_validation": {
+    "stage_a_checks": "passed",
+    "selftest_weak_mean": 0.451,
+    "selftest_thorough_mean": 1.0,
+    "eval_bench_modal_curve": "0.2333 -> 0.75"
+  },
+  "fireworks": {
+    "baseline": {
+      "status": "ok",
+      "model": "accounts/fireworks/models/gpt-oss-120b",
+      "best_of_n": 1,
+      "mean_kill_rate": 0.48675,
+      "artifact": "fireworks_results.json"
+    },
+    "eval_protocol": {
+      "local_fixture": "passed",
+      "evaluator_id": "testbench-eval-protocol-test-testbench-forge-rft",
+      "evaluator_state": "ACTIVE",
+      "dataset": "accounts/charliegillet/datasets/testbench-forge-dataset",
+      "dataset_state": "READY",
+      "dry_run": "passed"
+    },
+    "rft_launch": {
+      "status": "blocked",
+      "blocked_on": "Fireworks billing payment method",
+      "error": "payment method is required"
+    }
+  },
+  "hud": {
+    "task_list": "passed",
+    "gateway_eval": {
+      "status": "ok",
+      "job": "https://hud.ai/jobs/880632c539ec405abb3dead562d64d34",
+      "mean_reward": 0.0,
+      "success_rate": 0.0
+    },
+    "trainable_fork": {
+      "status": "created",
+      "model_name": "testbench-q4-89d30f",
+      "source": "Qwen/Qwen3.5-4B"
+    },
+    "training_smoke": {
+      "status": "blocked",
+      "blocked_on": "HUD Tinker active session limits and upstream overload",
+      "errors": [
+        "Too many active sessions",
+        "no trainable turns in the provided inputs",
+        "503 Service Temporarily Unavailable"
+      ]
+    }
+  },
+  "modal": {
+    "smoke": {
+      "status": "ok",
+      "run": "https://modal.com/apps/charlie-gillet1/main/ap-7UjNPrnMRfKb6wp0HJ2eSf",
+      "artifact": "modal_grpo_result.json",
+      "steps": 4,
+      "best_reward": 0.47749999165534973,
+      "final_reward": 0.0
+    }
+  }
+}

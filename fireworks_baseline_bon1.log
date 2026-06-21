@@ -1,0 +1,15 @@
+model=accounts/fireworks/models/gpt-oss-120b  best-of-1
+
+  merge_intervals      kill_rate=0.907  (17/18 mutants, gate ok)
+  is_balanced          kill_rate=1.000  (16/16 mutants, gate ok)
+  two_sum              kill_rate=0.000  (0/0 mutants, gate GATE-FAIL)
+  run_length_encode    kill_rate=0.000  (0/0 mutants, gate GATE-FAIL)
+  binary_search        kill_rate=0.000  (0/0 mutants, gate GATE-FAIL)
+  roman_to_int         kill_rate=1.000  (18/18 mutants, gate ok)
+  gcd                  kill_rate=0.000  (0/0 mutants, gate GATE-FAIL)
+  flatten              kill_rate=1.000  (11/11 mutants, gate ok)
+  is_palindrome        kill_rate=0.960  (10/10 mutants, gate ok)
+  fizzbuzz             kill_rate=0.000  (0/0 mutants, gate GATE-FAIL)
+
+  mean baseline kill_rate = 0.487  (this is the 'before' number RFT improves on)
+wrote fireworks_results.json

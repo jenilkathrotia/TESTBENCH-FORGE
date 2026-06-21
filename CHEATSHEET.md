@@ -34,24 +34,25 @@ Now you have a working, presentable project no matter what happens next.
 
 ### 2: Get your "before" number
 ```bash
-pip install fireworks-ai reward-kit
+pip install fireworks-ai eval-protocol
 python fireworks_baseline.py     # write down the "mean baseline kill_rate"
 ```
 
 ### 3: Deploy the reward + start training early
 ```bash
 python build_dataset.py
-reward-kit preview --metrics-folders "kill=." --samples dataset.jsonl
-reward-kit deploy  --id testbench-forge --metrics-folders "kill=." --force
+eval-protocol local-test --entry testbench_eval_protocol.py::test_testbench_forge_fixture --ignore-docker -y
+eval-protocol upload --entry testbench_eval_protocol.py::test_testbench_forge_rft --force -y
+firectl dataset create testbench-forge-dataset dataset.jsonl
 ```
 Then **go to the Fireworks booth** and say:
-> *"I deployed a reward function with reward-kit. How do I start an RFT job using it, with my `dataset.jsonl` and base model **Qwen2.5-32B**?"*
+> *"My Eval Protocol evaluator is active and my dataset is uploaded. The RFT launch reaches Fireworks but says `payment method is required`. Can you enable billing or tell me how to start this job with credits?"*
 
 Let it train in the background. This is the long pole, the earlier you start, the better.
 
 ### 4: While it trains
 - Rehearse the demo + the one-line pitch (below).
-- Optional, with HUD key: `hud eval tasks.py claude`
+- Optional, with HUD key: `hud eval tasks.py claude --gateway`
 - Optional booth check: *"Does my `daytona_runner.py` / `modal_runner.py` use your current SDK?"*
 
 ### 5: After training finishes
@@ -76,6 +77,12 @@ Open `demo.html`, click **"Reveal a thorough suite"**, and say:
 - Read the terminal message : it usually says what's wrong.
 - Paste the red error text to Claude and ask for a fix.
 - **Fallback:** Step 0 (the `demo.html` with weak-to-thorough) always works and still proves the idea. You can present that alone.
+
+## Current external status
+- Fireworks baseline works: best-of-1 `gpt-oss-120b` mean kill rate 0.487.
+- Fireworks evaluator and dataset are ready. RFT launch is blocked by `payment method is required`.
+- HUD gateway eval works. HUD training fork `testbench-q4-89d30f` exists, but Tinker training was overloaded.
+- Modal fresh smoke works: 4 GRPO steps, best reward 0.477.
 
 ## What each sponsor does (for the judges' questions)
 - **HUD**: hosts the environment. **Fireworks**: does the training (RFT). **Modal**: GPUs / parallel runs. **Daytona**: optional sandbox for running untrusted code. **Anthropic**: Claude as the comparison baseline.

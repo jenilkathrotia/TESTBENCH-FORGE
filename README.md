@@ -10,7 +10,10 @@ Track fit: **Agentic Collaboration** (the pytest variant you present) with a **C
 - ✅ **Verifiable, hard-to-game environment**: 10 modules, hidden mutants, automatic MS* kill-rate reward with suite-size control, no LLM judge.
 - ✅ **Reproducible discrimination (no API key):** a lazy suite scores **0.451**, a thorough suite **1.000**, `assert False` scores **0** (`python selftest.py`). The lazy mean is a local calibration proxy, not a final base-model statistic.
 - ✅ **Real GRPO training artifact:** Modal A100 GRPO on Qwen2.5-3B improved training reward first-10 mean **0.233** to last-10 mean **0.750** over 80 steps (`grpo_result.json`, `grpo_rewards.txt`).
-- ✅ **Honest eval boundary:** the dashboard fallback is lazy-vs-thorough, not a trained-model eval. Live base-vs-best-of-N-vs-trained model eval still requires API credentials.
+- ✅ **Live Fireworks baseline:** `accounts/fireworks/models/gpt-oss-120b` best-of-1 scored **0.487** mean kill rate on the 10-module dataset (`fireworks_results.json`).
+- ✅ **Fireworks RFT handoff ready:** Eval Protocol fixture passed, evaluator `testbench-eval-protocol-test-testbench-forge-rft` is ACTIVE, and dataset `testbench-forge-dataset` is READY. Actual RFT launch is blocked by Fireworks billing: `payment method is required`.
+- ✅ **HUD and Modal smoke coverage:** HUD gateway eval ran at https://hud.ai/jobs/880632c539ec405abb3dead562d64d34. HUD training fork `testbench-q4-89d30f` was created, but Tinker training hit active-session and upstream-overload errors. Modal GPU smoke completed with best reward **0.477** (`modal_grpo_result.json`).
+- ✅ **Honest eval boundary:** the dashboard fallback is lazy-vs-thorough unless a real trained-model `results.json` exists. Do not claim held-out trained-model lift yet.
 
 ## The loop
 
@@ -31,8 +34,9 @@ Track fit: **Agentic Collaboration** (the pytest variant you present) with a **C
 |---|---|---|
 | `testbench.py` | **10 modules** + reference impls, **AST mutation engine**, differential filter, suite-runner dispatch, kill-rate scorer, prompt | the new core |
 | `env.py` | HUD `forge_testbench` template + `run_tests` MCP tool (gate-only dry-run) | + template |
-| `reward.py` | **Fireworks reward-kit adapter**: wraps `score_suite` as an `@reward_function` (imports without the SDK via shims) | new |
-| `build_dataset.py` | emits `dataset.jsonl` (prompt + `ground_truth_for_eval.module_id`) for RFT | new |
+| `reward.py` | **Fireworks Eval Protocol reward adapter**: wraps `score_suite` for RFT scoring (imports without SDKs via shims) | new |
+| `testbench_eval_protocol.py` | Eval Protocol `@evaluation_test` entries: local fixture plus Fireworks RFT rollout evaluator | new |
+| `build_dataset.py` | emits `dataset.jsonl` (prompt + `ground_truth.module_id`, plus legacy `ground_truth_for_eval`) for RFT | new |
 | `fireworks_baseline.py` | baseline / best-of-N runner via the Fireworks inference SDK | new |
 | `daytona_runner.py` | Daytona sandbox runner for untrusted code (`REWARDFORGE_RUNNER=daytona`) | new |
 | `modal_runner.py` | Modal parallel-scoring + GPU entrypoint (`REWARDFORGE_RUNNER=modal`) | new |
@@ -65,10 +69,10 @@ python3 eval_bench.py --out eval_results.json
 
 # 3. keys
 hud login                                # HUD_API_KEY -> ~/.hud/.env
-hud set ANTHROPIC_API_KEY=sk-ant-...
+export FIREWORKS_API_KEY=fw-...
 
 # 4. baseline eval across the modules
-hud eval tasks.py claude
+hud eval tasks.py claude --gateway
 
 # (optional) execute untrusted code in a real sandbox instead of a local subprocess:
 #   export REWARDFORGE_RUNNER=daytona     # or: modal
@@ -104,25 +108,37 @@ python3 eval_bench.py --out eval_results.json
 ```
 
 ```bash
-pip install fireworks-ai reward-kit         # into the venv
+pip install fireworks-ai eval-protocol       # into the venv
 export FIREWORKS_API_KEY=fw-...
 
 # 1. baseline ("before" number) with the inference SDK: also the best-of-N fallback
-.venv/bin/python fireworks_baseline.py            # BEST_OF_N=4 for best-of-N
+.venv/bin/python fireworks_baseline.py            # BEST_OF_N=4 for best-of-N, FW_TIMEOUT caps slow calls
 
-# 2. build the RFT dataset (prompt + ground_truth_for_eval.module_id)
+# 2. build the RFT dataset
 .venv/bin/python build_dataset.py                 # -> dataset.jsonl
 
-# 3. sanity-check the reward locally, then deploy it
-reward-kit preview --metrics-folders "kill=." --samples dataset.jsonl
-reward-kit deploy  --id testbench-forge --metrics-folders "kill=." --force
+# 3. sanity-check the evaluator locally
+eval-protocol local-test --entry testbench_eval_protocol.py::test_testbench_forge_fixture --ignore-docker -y
 
-# 4. launch the RFT/GRPO job: point Fireworks RFT at the deployed evaluator
-#    + dataset.jsonl + a trainable base (e.g. Qwen2.5-32B). Use reward_function(mode="batch")
-#    for GRPO pairwise rollout comparison. (Create via the Fireworks RFT dashboard / firectl.)
+# 4. upload evaluator and dataset
+eval-protocol upload --entry testbench_eval_protocol.py::test_testbench_forge_rft --force -y
+firectl dataset create testbench-forge-dataset dataset.jsonl
+
+# 5. dry-run RFT
+eval-protocol create rft --dry-run -y --skip-validation \
+  --dataset testbench-forge-dataset \
+  --evaluator testbench-eval-protocol-test-testbench-forge-rft \
+  --training-config-base-model accounts/fireworks/models/gpt-oss-120b \
+  --training-config-output-model testbench-forge-rft \
+  --training-config-epochs 1 \
+  --max-concurrent-rollouts 4 \
+  --max-concurrent-evaluations 4 \
+  --inference-parameters-response-candidates-count 4 \
+  --inference-parameters-temperature 0.8 \
+  --inference-parameters-max-output-tokens 4096
 ```
 
-> Verified against docs.fireworks.ai (Jun 2026): the `@reward_function` signature, `EvaluateResult`, `ground_truth` passing, `reward-kit preview/deploy`, and JSONL `ground_truth_for_eval` are exact. The final RFT-job-create step is driven from the Fireworks RFT console once the evaluator is deployed. Confirm the current `firectl`/console flow on the day.
+Current blocker: the actual RFT launch reaches Fireworks but returns `payment method is required`. Add a payment method in Fireworks billing, then rerun the same command without `--dry-run`.
 
 ## Sponsor stack ($1,075; the full $950 trio)
 
@@ -145,8 +161,8 @@ Split-screen, one module (`is_balanced`). The **bug-kill meter** can use real `r
 | block | goal |
 |---|---|
 | **0-3h** | done: mutation engine, differential filter, hardened suite runner, 10 modules; `selftest` proves headroom and hard-to-game checks. |
-| **3–7h** | baseline eval (`hud eval tasks.py claude` + base open model); confirm Fireworks `reward-kit` wraps `score_suite` identically; add 4–6 more modules for training volume. |
-| **7-15h** | kick off Fireworks GRPO/RFT on Modal: dense reward + fast eval = many episodes overnight; stream the bug-kill curve into the demo dashboard. |
+| **3-7h** | done: HUD gateway eval, Fireworks baseline, Eval Protocol evaluator, dataset upload, RFT dry-run. |
+| **7-15h** | blocked only on Fireworks billing for RFT launch. Modal GPU smoke completed; HUD Tinker training hit active-session and upstream-overload errors. |
 | **15-22h** | route `_run_suite_once` through a Daytona/Modal sandbox if credentials are available; pull held-out eval for the "after" number. |
 | **22-24h** | rehearse the split-screen kill-meter demo; fallback = best-of-N suites with kill-rate as selector. |
 
