@@ -15,7 +15,7 @@ venv/
 .hud/
 
 # Training run artifacts (regenerated each run)
-train_log.jsonl
+train_log*.jsonl
 train_progress.json
 train_console.log
 .hud_eval.toml
