@@ -39,11 +39,24 @@ def _stable_seed(s: str) -> int:
 
 
 def extract_code(text: str) -> str:
-    """Pull Python out of the agent's final answer (fenced block, else raw text)."""
+    """Pull Python out of the agent's final answer.
+
+    Handles reasoning models that emit ``<think>...</think>`` before the code, and
+    answers with or without a ```python fence.
+    """
+    if not text:
+        return ""
+    # Prefer a fenced code block (works even when it appears after a </think> block).
     blocks = re.findall(r"```(?:python)?\s*(.*?)```", text, re.S)
     if blocks:
         return max(blocks, key=len).strip()
-    return text.strip()
+    # No fence: strip reasoning, then take from the first import/def onward.
+    cleaned = re.sub(r"<think>.*?</think>", "", text, flags=re.S)
+    cleaned = re.sub(r"<think>.*$", "", cleaned, flags=re.S)  # unclosed <think>
+    m = re.search(r"(?m)^\s*(?:import |from |def )", cleaned)
+    if m:
+        return cleaned[m.start():].strip()
+    return cleaned.strip()
 
 
 def _alter_num(gold: str, rng: random.Random) -> str:
