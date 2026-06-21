@@ -1,0 +1,638 @@
+{
+  "binary_search": {
+    "base": {
+      "suite": "def test_edge_case_empty_list():\n    assert binary_search([], 5) == -1\n\ndef test_single_element_present():\n    assert binary_search([2], 2) == 0\n    assert binary_search([2], 3) == -1\n\ndef test_middle_index():\n    assert binary_search([1, 3, 5, 7], 5) == 2\n\ndef test_first_element():\n    assert binary_search([1, 3, 5, 7], 1) == 0\n\ndef test_last_element():\n    assert binary_search([1, 3, 5, 7], 7) == 3\n\ndef test_target_larger_than_all_elements():\n    assert binary_search([1, 3, 5, 7], 8) == -1\n\ndef test_target_smaller_than_all_elements():\n    assert binary_search([1, 3, 5, 7], 0) == -1\n\ndef test_duplicate_elements():\n    assert binary_search([1, 2, 2, 3, 4], 2) == 1\n    assert binary_search([1, 2, 2, 3, 4], 3) == 3\n    assert binary_search([1, 2, 2, 3, 4], 1) == 0",
+      "rate": 0.0,
+      "killed": null,
+      "mutants": null
+    },
+    "trained": {
+      "suite": "def test_edge_case_empty_list():\n    assert binary_search([], 5) == -1\n\ndef test_single_element_match():\n    assert binary_search([2], 2) == 0\n\ndef test_out_of_bounds_target():\n    assert binary_search([2], 3) == -1\n\ndef test_found_at_start():\n    assert binary_search([1, 3, 5, 7], 1) == 0\n\ndef test_found_in_middle():\n    assert binary_search([1, 3, 5, 7], 7) == 3\n\ndef test_found_in_end():\n    assert binary_search([1, 3, 5, 7], 3) == 1",
+      "rate": 0.944,
+      "killed": 17,
+      "mutants": 18
+    },
+    "base_mean": 0.309,
+    "trained_mean": 0.934,
+    "all_base": [
+      {
+        "suite": "def test_edge_case_empty_list():\n    assert binary_search([], 5) == -1\n\ndef test_single_element_present():\n    assert binary_search([2], 2) == 0\n    assert binary_search([2], 3) == -1\n\ndef test_middle_element():\n    assert binary_search([1, 3, 5, 7], 5) == 2\n\ndef test_first_element():\n    assert binary_search([1, 3, 5, 7], 1) == 0\n\ndef test_last_element():\n    assert binary_search([1, 3, 5, 7], 7) == 3\n\ndef test_target_out_of_bounds():\n    assert binary_search([1, 3, 5, 7], 0) == -1\n    assert binary_search([1, 3, 5, 7], 8) == -1",
+        "rate": 1.0,
+        "killed": 18,
+        "mutants": 18
+      },
+      {
+        "suite": "def test_edge_empty():\n    assert binary_search([], 5) == -1\n\ndef test_single_element_match():\n    assert binary_search([2], 2) == 0\n    assert binary_search([2], 3) == -1\n\ndef test_sorted_list_middle_match():\n    assert binary_search([1, 3, 5, 7], 5) == 2\n    assert binary_search([1, 3, 5, 7], 1) == 0\n    assert binary_search([1, 3, 5, 7], 7) == 3\n\ndef test_boundary_one_element():\n    assert binary_search([1], 1) == 0\n    assert binary_search([1], 2) == -1\n\ndef test_large_sorted_list():\n    nums = [i for i in range(1000)]\n    assert binary_search(nums, 500) == 500\n\ndef test_non_distinct_elements():\n    nums = [1, 1, 2, 3, 3]\n    assert binary_search(nums, 2) == 2\n    assert binary_search(nums, 4) == -1\n\ndef test_duplicate_values():\n    nums = [1, 3, 5, 5, 6]\n    assert binary_search(nums, 5) == 2\n    assert binary_search(nums, 1) == 0\n    assert binary_search(nums, 6) == 4\n    assert binary_search(nums, 7) == -1\n\ndef test_negative_numbers():\n    nums = [-1, 0, 2, 3, 4, 5]\n    assert binary_search(nums, 0) == 1\n    assert binary_search(nums, -1) == 0\n    assert binary_search(nums, 5) == 5\n    assert binary_search(nums, 6) == -1",
+        "rate": 1.0,
+        "killed": 18,
+        "mutants": 18
+      },
+      {
+        "suite": "def test_edge_case_empty_list():\n    assert binary_search([], 5) == -1\n\ndef test_single_element_present():\n    assert binary_search([2], 2) == 0\n    assert binary_search([2], 3) == -1\n\ndef test_middle_index():\n    assert binary_search([1, 3, 5, 7], 5) == 2\n\ndef test_first_element():\n    assert binary_search([1, 3, 5, 7], 1) == 0\n\ndef test_last_element():\n    assert binary_search([1, 3, 5, 7], 7) == 3\n\ndef test_target_larger_than_all_elements():\n    assert binary_search([1, 3, 5, 7], 8) == -1\n\ndef test_target_smaller_than_all_elements():\n    assert binary_search([1, 3, 5, 7], 0) == -1\n\ndef test_duplicate_elements():\n    assert binary_search([1, 2, 2, 3, 4], 2) == 1\n    assert binary_search([1, 2, 2, 3, 4], 3) == 3\n    assert binary_search([1, 2, 2, 3, 4], 1) == 0",
+        "rate": 0.0,
+        "killed": null,
+        "mutants": null
+      },
+      {
+        "suite": "def test_empty_list():\n    assert binary_search([], 5) == -1\n\ndef test_single_element_found():\n    assert binary_search([2], 2) == 0\n\ndef test_single_element_not_found():\n    assert binary_search([2], 3) == -1\n\ndef test_middle_element_found():\n    assert binary_search([1, 3, 5, 7], 5) == 2\n\ndef test_first_element_found():\n    assert binary_search([1, 3, 5, 7], 1) == 0\n\ndef test_last_element_found():\n    assert binary_search([1, 3, 5, 7], 7) == 3\n\ndef test_target_greater_than_all_elements():\n    assert binary_search([1, 3, 5, 7], 8) == -1\n\ndef test_target_smaller_than_all_elements():\n    assert binary_search([1, 3, 5, 7], 0) == -1\n\ndef test_target_at_start():\n    assert binary_search([1, 3, 5, 7], 1) == 0\n\ndef test_target_at_end():\n    assert binary_search([1, 3, 5, 7], 7) == 3\n\ndef test_duplicate_elements_found():\n    assert binary_search([1, 2, 2, 3, 4], 2) == 1\n\ndef test_duplicate_elements_not_found():\n    assert binary_search([1, 2, 2, 3, 4], 3) == 3",
+        "rate": 0.0,
+        "killed": null,
+        "mutants": null
+      },
+      {
+        "suite": "def test_edge_case_empty_list():\n    assert binary_search([], 5) == -1\n\ndef test_single_element_found():\n    assert binary_search([2], 2) == 0\n    assert binary_search([2], 3) == -1\n\ndef test_middle_element_found():\n    assert binary_search([1, 3, 5, 7], 5) == 2\n\ndef test_first_element_found():\n    assert binary_search([1, 3, 5, 7], 1) == 0\n\ndef test_last_element_found():\n    assert binary_search([1, 3, 5, 7], 7) == 3\n\ndef test_target_not_in_list():\n    assert binary_search([2, 4, 6, 8], 3) == -1\n\ndef test_duplicate_elements():\n    assert binary_search([2, 4, 6, 6, 8], 6) == 2",
+        "rate": 1.0,
+        "killed": 18,
+        "mutants": 18
+      },
+      {
+        "suite": "def test_edge_case_empty_list():\n    assert binary_search([], 5) == -1\n\ndef test_single_element_match():\n    assert binary_search([2], 2) == 0\n    assert binary_search([42], 42) == 0\n\ndef test_out_of_order_elements():\n    assert binary_search([1, 3, 5, 7], 6) == -1\n    assert binary_search([1, 3, 5, 7], 8) == -1\n\ndef test_middle_match():\n    assert binary_search([1, 3, 5, 7], 3) == 1\n    assert binary_search([1, 3, 5, 7], 5) == 2\n\ndef test_target_missing():\n    assert binary_search([1, 3, 5, 7], 0) == -1\n    assert binary_search([1, 3, 5, 7], 4) == -1\n\ndef test_reverse_sorted():\n    assert binary_search([7, 5, 3, 1], 3) == 2\n    assert binary_search([7, 5, 3, 1], 1) == 3\n\ndef test_identical_elements():\n    assert binary_search([1, 1, 1, 1], 1) == 0\n    assert binary_search([1, 1, 1, 1], 2) == -1\n\ndef test_duplicate_elements():\n    assert binary_search([1, 2, 2, 3], 2) == 1\n    assert binary_search([1, 2, 2, 3], 3) == 3",
+        "rate": 0.0,
+        "killed": null,
+        "mutants": null
+      },
+      {
+        "suite": "def test_edge_case_empty_list():\n    assert binary_search([], 5) == -1\n\ndef test_single_element_match():\n    assert binary_search([2], 2) == 0\n\ndef test_single_element_miss():\n    assert binary_search([2], 3) == -1\n\ndef test_middle_match():\n    assert binary_search([1, 3, 5, 7], 5) == 2\n\ndef test_first_match():\n    assert binary_search([1, 3, 5, 7], 1) == 0\n\ndef test_last_match():\n    assert binary_search([1, 3, 5, 7], 7) == 3\n\ndef test_target_greater_than_all_elements():\n    assert binary_search([1, 3, 5, 7], 8) == -1\n\ndef test_target_less_than_all_elements():\n    assert binary_search([1, 3, 5, 7], 0) == -1\n\ndef test_large_list_with_target():\n    large_list = list(range(10000))\n    large_list.append(9999)\n    assert binary_search(large_list, 9999) == len(large_list) - 1\n\ndef test_duplicate_elements():\n    assert binary_search([2, 2, 2, 2], 2) == 0\n    assert binary_search([2, 2, 2, 2], 3) == -1\n\ndef test_reverse_sorted_list():\n    assert binary_search(list(range(10, 0, -1)), 5) == -1\n\ndef test_non_integer_target():\n    assert binary_search([2], \"a\") == -1",
+        "rate": 0.0,
+        "killed": null,
+        "mutants": null
+      },
+      {
+        "suite": "def test_edge_case_empty_list():\n    assert binary_search([], 5) == -1\n\ndef test_single_element_equal_target():\n    assert binary_search([2], 2) == 0\n\ndef test_single_element_not_target():\n    assert binary_search([2], 3) == -1\n\ndef test_middle_element():\n    assert binary_search([1, 3, 5, 7], 5) == 2\n\ndef test_first_element():\n    assert binary_search([1, 3, 5, 7], 1) == 0\n\ndef test_large_list():\n    large_list = list(range(1, 10001))\n    assert binary_search(large_list, 10000) == 10000\n\ndef test_out_of_order_list():\n    out_of_order = [6, 1, 2, 3, 4, 5]\n    assert binary_search(out_of_order, 1) == 1\n\ndef test_target_beyond_end():\n    assert binary_search([1, 3, 5, 7], 8) == -1",
+        "rate": 0.0,
+        "killed": null,
+        "mutants": null
+      },
+      {
+        "suite": "def test_empty_list():\n    assert binary_search([], 5) == -1\n\ndef test_single_element():\n    assert binary_search([2], 2) == 0\n    assert binary_search([2], 3) == -1\n\ndef test_single_item_sorted():\n    assert binary_search([1], 1) == 0\n    assert binary_search([1], 2) == -1\n\ndef test_middle_index():\n    assert binary_search([1, 3, 5, 7], 5) == 2\n    assert binary_search([1, 3, 5, 7], 7) == 3\n\ndef test_edge_case_first_item():\n    assert binary_search([1, 3, 5, 7], 1) == 0\n    assert binary_search([1, 3, 5, 7], 3) == 1\n\ndef test_edge_case_last_item():\n    assert binary_search([1, 3, 5, 7], 7) == 3\n    assert binary_search([1, 3, 5, 7], 5) == 2\n\ndef test_missing_target():\n    assert binary_search([1, 3, 5, 7], 4) == -1\n    assert binary_search([1, 3, 5, 7], 8) == -1\n\ndef test_all_elements_are_equal():\n    assert binary_search([1, 1, 1, 1], 1) == 0\n    assert binary_search([1, 1, 1, 1], 2) == -1",
+        "rate": 0.0,
+        "killed": null,
+        "mutants": null
+      },
+      {
+        "suite": "def test_edge_case_empty_list():\n    assert binary_search([], 5) == -1\n\ndef test_single_element_match():\n    assert binary_search([2], 2) == 0\n    assert binary_search([3], 3) == 0\n\ndef test_single_element_miss():\n    assert binary_search([2], 3) == -1\n    assert binary_search([3], 2) == -1\n\ndef test_middle_element():\n    assert binary_search([1, 3, 5, 7], 5) == 2\n\ndef test_first_element():\n    assert binary_search([1, 3, 5, 7], 1) == 0\n\ndef test_last_element():\n    assert binary_search([1, 3, 5, 7], 7) == 3\n\ndef test_non_existent_element():\n    assert binary_search([1, 3, 5, 7], 4) == -1\n    assert binary_search([1, 3, 5, 7], 8) == -1\n\ndef test_duplicate_elements():\n    assert binary_search([2, 2, 2, 2], 2) == 0\n    assert binary_search([2, 2, 2, 2], 3) == -1",
+        "rate": 0.0,
+        "killed": null,
+        "mutants": null
+      },
+      {
+        "suite": "def test_edge_case_empty_list():\n    assert binary_search([], 5) == -1\n\ndef test_single_element_equal_target():\n    assert binary_search([2], 2) == 0\n    assert binary_search([2], 3) == -1\n\ndef test_single_element_not_found():\n    assert binary_search([2], 2) == 0\n    assert binary_search([2], 3) == -1\n\ndef test_sorted_positive_numbers():\n    assert binary_search([1, 3, 5, 7], 5) == 2\n    assert binary_search([1, 3, 5, 7], 1) == 0\n    assert binary_search([1, 3, 5, 7], 7) == 3\n    assert binary_search([1, 3, 5, 7], 0) == -1\n\ndef test_sorted_negative_numbers():\n    assert binary_search([-1, -3, -5, -7], -5) == 2\n    assert binary_search([-1, -3, -5, -7], -1) == 0\n    assert binary_search([-1, -3, -5, -7], -7) == 3\n    assert binary_search([-1, -3, -5, -7], -9) == -1\n\ndef test_duplicate_elements():\n    assert binary_search([1, 1, 2, 3, 4], 1) == 0\n    assert binary_search([1, 1, 2, 3, 4], 4) == 4\n    assert binary_search([1, 1, 2, 3, 4], 5) == -1",
+        "rate": 0.0,
+        "killed": null,
+        "mutants": null
+      },
+      {
+        "suite": "def test_edge_cases():\n    assert binary_search([], 5) == -1\n\ndef test_single_element():\n    assert binary_search([2], 2) == 0\n    assert binary_search([2], 3) == -1\n\ndef test_small_list():\n    assert binary_search([1, 3], 3) == 1\n    assert binary_search([1, 3], 2) == -1\n\ndef test_mid_elements():\n    assert binary_search([1, 3, 5, 7], 5) == 2\n    assert binary_search([1, 3, 5, 7], 6) == -1\n\ndef test_large_list():\n    nums = list(range(1, 1000))  # Evenly spaced numbers from 1 to 999\n    target = 500\n    assert binary_search(nums, target) == target - 1\n\ndef test_target_equals_first_element():\n    nums = [5]\n    assert binary_search(nums, 5) == 0\n\ndef test_target_equals_last_element():\n    nums = [5]\n    assert binary_search(nums, 5) == 0\n\ndef test_non_decreasing_sequence():\n    nums = list(range(1, 1000))\n    assert binary_search(nums, 500) == 499\n\ndef test_duplicate_elements():\n    nums = [1, 2, 2, 3, 4]\n    assert binary_search(nums, 2) == 1\n    assert binary_search(nums, 3) == 3\n    assert binary_search(nums, 4) == 4\n    assert binary_search(nums, 5) == -1",
+        "rate": 0.0,
+        "killed": null,
+        "mutants": null
+      },
+      {
+        "suite": "def test_edge_case_empty_list():\n    assert binary_search([], 5) == -1\n\ndef test_target_not_in_list():\n    assert binary_search([2], 3) == -1\n    assert binary_search([1, 3, 5, 7], 6) == -1\n\ndef test_target_is_first_element():\n    assert binary_search([1, 3, 5, 7], 1) == 0\n\ndef test_target_is_last_element():\n    assert binary_search([1, 3, 5, 7], 7) == 3\n\ndef test_target_is_middle_element_even_length():\n    assert binary_search([1, 3, 5, 7, 9], 5) == 2\n\ndef test_target_is_middle_element_odd_length():\n    assert binary_search([1, 3, 5, 7], 3) == 1\n\ndef test_target_is_first_or_last_element():\n    assert binary_search([2, 4, 6, 8], 2) == 0\n    assert binary_search([2, 4, 6, 8], 8) == 3\n\ndef test_target_between_elements():\n    assert binary_search([1, 3, 5, 7], 4) == -1\n    assert binary_search([1, 3, 5, 7], 2) == -1",
+        "rate": 0.944,
+        "killed": 17,
+        "mutants": 18
+      },
+      {
+        "suite": "def test_edge_case_empty_list():\n    assert binary_search([], 5) == -1\n\ndef test_single_element_list_match():\n    assert binary_search([2], 2) == 0\n\ndef test_single_element_list_no_match():\n    assert binary_search([2], 3) == -1\n\ndef test_middle_element():\n    assert binary_search([1, 3, 5, 7], 5) == 2\n\ndef test_first_element():\n    assert binary_search([1, 3, 5, 7], 1) == 0\n\ndef test_last_element():\n    assert binary_search([1, 3, 5, 7], 7) == 3\n\ndef test_large_list_match():\n    assert binary_search(list(range(1000)), 999) == 999\n\ndef test_large_list_no_match():\n    assert binary_search(list(range(1000)), 1001) == -1\n\ndef test_duplicate_elements():\n    assert binary_search([1, 2, 2, 3, 4], 2) == 1\n    assert binary_search([1, 2, 2, 3, 4], 3) == 3",
+        "rate": 0.0,
+        "killed": null,
+        "mutants": null
+      },
+      {
+        "suite": "def test_edge_cases():\n    assert binary_search([], 5) == -1\n    assert binary_search([2], 2) == 0\n    assert binary_search([2], 3) == -1\n\ndef test_single_element():\n    assert binary_search([1], 1) == 0\n    assert binary_search([2], 2) == 0\n    assert binary_search([3], 3) == 0\n\ndef test_empty_insertion():\n    assert binary_search([1, 3, 5, 7], 0) == -1\n    assert binary_search([1, 3, 5, 7], 8) == -1\n\ndef test_unique_element():\n    assert binary_search([1, 3, 5, 7], 1) == 0\n    assert binary_search([1, 3, 5, 7], 3) == 1\n    assert binary_search([1, 3, 5, 7], 7) == 3\n\ndef test_middle_index():\n    assert binary_search([1, 3, 5, 7], 5) == 2\n\ndef test_large_list():\n    nums = [i for i in range(1000)]\n    assert binary_search(nums, 999) == 999\n    assert binary_search(nums, 1) == 0\n    assert binary_search(nums, 500) == 499\n\ndef test_duplicate_elements():\n    nums = [1, 3, 5, 5, 7]\n    assert binary_search(nums, 5) == 2\n    assert binary_search(nums, 6) == -1\n\ndef test_boundary_conditions():\n    assert binary_search([1], 1) == 0\n    assert binary_search([2], 2) == 0\n    assert binary_search([1, 2], 1) == 0\n    assert binary_search([1, 2], 2) == 1",
+        "rate": 0.0,
+        "killed": null,
+        "mutants": null
+      },
+      {
+        "suite": "def test_edge_empty_list():\n    assert binary_search([], 5) == -1\n\ndef test_single_element_match():\n    assert binary_search([2], 2) == 0\n    assert binary_search([3], 3) == 0\n\ndef test_missing_in_single_element_list():\n    assert binary_search([2], 3) == -1\n    assert binary_search([3], 2) == -1\n\ndef test_middle_match():\n    assert binary_search([1, 3, 5, 7], 5) == 2\n    assert binary_search([1, 3, 7, 5], 7) == 2\n\ndef test_edge_case_large_list():\n    large_list = list(range(1, 1000001))  # A very large sorted list\n    assert binary_search(large_list, 999999) == 999998\n    assert binary_search(large_list, 1) == 0\n    assert binary_search(large_list, 500000) == 499999\n\ndef test_out_of_bounds():\n    assert binary_search([1], 0) == -1\n    assert binary_search([1], 2) == -1\n\ndef test_duplicate_values():\n    assert binary_search([1, 3, 5, 5, 7], 5) == 2\n    assert binary_search([1, 3, 5, 5, 7], 7) == 4\n    assert binary_search([1, 3, 5, 5, 7], 3) == 1",
+        "rate": 1.0,
+        "killed": 18,
+        "mutants": 18
+      }
+    ],
+    "all_trained": [
+      {
+        "suite": "def test_edge_case_empty_list():\n    assert binary_search([], 5) == -1\n\ndef test_edge_case_single_element():\n    assert binary_search([2], 2) == 0\n    assert binary_search([2], 3) == -1\n\ndef test_edge_case_sorted_sequence():\n    assert binary_search([1, 3, 5, 7], 5) == 2\n    assert binary_search([1, 3, 5, 7], 1) == 0\n    assert binary_search([1, 3, 5, 7], 7) == 3\n    assert binary_search([1, 3, 5, 7], 0) == -1",
+        "rate": 1.0,
+        "killed": 18,
+        "mutants": 18
+      },
+      {
+        "suite": "def test_empty_list():\n    assert binary_search([], 5) == -1\n\ndef test_single_element_list():\n    assert binary_search([2], 2) == 0\n    assert binary_search([2], 3) == -1\n\ndef test_sorted_unique_elements():\n    assert binary_search([1, 3, 5, 7], 5) == 2\n    assert binary_search([1, 3, 5, 7], 1) == 0\n    assert binary_search([1, 3, 5, 7], 7) == 3\n    assert binary_search([1, 3, 5, 7], 6) == -1\n\ndef test_edge_cases_in_middle():\n    assert binary_search([1, 3, 5, 7], 4) == -1\n\ndef test_large_list():\n    nums = [i for i in range(1000)]\n    assert binary_search(nums, 999) == 999",
+        "rate": 1.0,
+        "killed": 18,
+        "mutants": 18
+      },
+      {
+        "suite": "def test_edge_case_empty_list():\n    assert binary_search([], 5) == -1\n\ndef test_single_element_match():\n    assert binary_search([2], 2) == 0\n\ndef test_target_not_in_list():\n    assert binary_search([2], 3) == -1\n\ndef test_middle_match():\n    assert binary_search([1, 3, 5, 7], 5) == 2\n\ndef test_first_element_match():\n    assert binary_search([1, 3, 5, 7], 1) == 0\n\ndef test_out_of_order_list():\n    # This test checks for a list that is not sorted but contains unique elements\n    assert binary_search([7, 1, 3, 5], 3) == 2",
+        "rate": 1.0,
+        "killed": 18,
+        "mutants": 18
+      },
+      {
+        "suite": "def test_edge_case_empty_list():\n    assert binary_search([], 5) == -1\n\ndef test_single_element_present():\n    assert binary_search([2], 2) == 0\n\ndef test_single_element_absent():\n    assert binary_search([2], 3) == -1\n\ndef test_multiple_elements_middle_present():\n    assert binary_search([1, 3, 5, 7], 5) == 2\n\ndef test_multiple_elements_start_present():\n    assert binary_search([1, 3, 5, 7], 1) == 0",
+        "rate": 1.0,
+        "killed": 18,
+        "mutants": 18
+      },
+      {
+        "suite": "def test_edge_case_empty_list():\n    assert binary_search([], 5) == -1\n\ndef test_target_exists_in_middle():\n    assert binary_search([1, 2, 3, 4, 5], 3) == 2\n\ndef test_target_exists_at_beginning():\n    assert binary_search([1, 2, 3, 4, 5], 1) == 0\n\ndef test_target_exists_at_end():\n    assert binary_search([1, 2, 3, 4, 5], 5) == 4\n\ndef test_target_missing():\n    assert binary_search([2, 4, 6, 8], 3) == -1\n\ndef test_target_exists_in_last_position():\n    assert binary_search([1, 3, 5, 7, 9], 7) == 3",
+        "rate": 1.0,
+        "killed": 18,
+        "mutants": 18
+      },
+      {
+        "suite": "def test_edge_case_empty_list():\n    assert binary_search([], 5) == -1\n\ndef test_single_element_list_match():\n    assert binary_search([2], 2) == 0\n\ndef test_single_element_list_no_match():\n    assert binary_search([2], 3) == -1\n\ndef test_middle_match():\n    assert binary_search([1, 3, 5, 7], 5) == 2\n\ndef test_first_match():\n    assert binary_search([1, 3, 5, 7], 1) == 0\n\ndef test_last_match():\n    assert binary_search([1, 3, 5, 7], 7) == 3\n\ndef test_large_list_match():\n    assert binary_search(list(range(1, 100000)), 99999) == 99998\n\ndef test_large_list_no_match():\n    assert binary_search(list(range(1, 100000)), 100000) == -1",
+        "rate": 1.0,
+        "killed": 18,
+        "mutants": 18
+      },
+      {
+        "suite": "def test_edge_case_empty_list():\n    assert binary_search([], 5) == -1\n\ndef test_single_element_match():\n    assert binary_search([2], 2) == 0\n    assert binary_search([2], 3) == -1\n\ndef test_middle_element_match():\n    assert binary_search([1, 3, 5, 7], 5) == 2\n    assert binary_search([1, 3, 5, 7], 1) == 0\n    assert binary_search([1, 3, 5, 7], 7) == 3\n    assert binary_search([1, 3, 5, 7], 6) == -1\n\ndef test_non_matching_elements():\n    assert binary_search([1, 2, 4, 5, 6, 8], 3) == -1\n    assert binary_search([1, 2, 4, 5, 6, 8], 9) == -1",
+        "rate": 1.0,
+        "killed": 18,
+        "mutants": 18
+      },
+      {
+        "suite": "def test_edge_case_empty_list():\n    assert binary_search([], 5) == -1\n\ndef test_single_element_present():\n    assert binary_search([2], 2) == 0\n\ndef test_target_missing():\n    assert binary_search([2], 3) == -1\n\ndef test_found_at_start():\n    assert binary_search([1, 3, 5, 7], 1) == 0\n\ndef test_found_in_middle():\n    assert binary_search([1, 3, 5, 7], 5) == 2\n\ndef test_found_at_end():\n    assert binary_search([1, 3, 5, 7], 7) == 3",
+        "rate": 1.0,
+        "killed": 18,
+        "mutants": 18
+      },
+      {
+        "suite": "def test_empty_list():\n    assert binary_search([], 5) == -1\n\ndef test_single_element_match():\n    assert binary_search([2], 2) == 0\n\ndef test_target_missing():\n    assert binary_search([2], 3) == -1\n\ndef test_middle_match():\n    assert binary_search([1, 3, 5, 7], 5) == 2\n\ndef test_first_match():\n    assert binary_search([1, 3, 5, 7], 1) == 0",
+        "rate": 1.0,
+        "killed": 18,
+        "mutants": 18
+      },
+      {
+        "suite": "def test_edge_empty_list():\n    assert binary_search([], 5) == -1\n\ndef test_edge_single_element():\n    assert binary_search([2], 2) == 0\n    assert binary_search([2], 3) == -1\n\ndef test_edge_sorted_list():\n    assert binary_search([1, 3, 5, 7], 5) == 2\n    assert binary_search([1, 3, 5, 7], 1) == 0\n    assert binary_search([1, 3, 5, 7], 0) == -1\n    assert binary_search([1, 3, 5, 7], 8) == -1",
+        "rate": 1.0,
+        "killed": 18,
+        "mutants": 18
+      },
+      {
+        "suite": "def test_edge_case_empty_list():\n    assert binary_search([], 5) == -1\n\ndef test_single_element_match():\n    assert binary_search([2], 2) == 0\n\ndef test_single_element_no_match():\n    assert binary_search([2], 3) == -1\n\ndef test_middle_match():\n    assert binary_search([1, 3, 5, 7], 5) == 2\n\ndef test_first_match():\n    assert binary_search([1, 3, 5, 7], 1) == 0\n\ndef test_last_match():\n    assert binary_search([1, 3, 5, 7], 7) == 3\n\ndef test_duplicate_elements():\n    assert binary_search([1, 3, 5, 5, 7], 5) == 2",
+        "rate": 1.0,
+        "killed": 18,
+        "mutants": 18
+      },
+      {
+        "suite": "def test_edge_case_empty_list():\n    assert binary_search([], 5) == -1\n\ndef test_single_element_match():\n    assert binary_search([2], 2) == 0\n\ndef test_target_not_in_list():\n    assert binary_search([2], 3) == -1\n\ndef test_middle_match():\n    assert binary_search([1, 3, 5, 7], 5) == 2\n\ndef test_first_match():\n    assert binary_search([1, 3, 5, 7], 1) == 0",
+        "rate": 1.0,
+        "killed": 18,
+        "mutants": 18
+      },
+      {
+        "suite": "def test_edge_case_empty_list():\n    assert binary_search([], 5) == -1\n\ndef test_single_element_match():\n    assert binary_search([2], 2) == 0\n\ndef test_target_greater_than_all_elements():\n    assert binary_search([2], 3) == -1\n\ndef test_middle_match():\n    assert binary_search([1, 3, 5, 7], 5) == 2\n\ndef test_first_element_match():\n    assert binary_search([1, 3, 5, 7], 1) == 0\n\ndef test_last_element_match():\n    assert binary_search([1, 3, 5, 7], 7) == 3",
+        "rate": 1.0,
+        "killed": 18,
+        "mutants": 18
+      },
+      {
+        "suite": "def test_edge_case_empty_list():\n    assert binary_search([], 5) == -1\n\ndef test_single_element_match():\n    assert binary_search([2], 2) == 0\n\ndef test_out_of_bounds_target():\n    assert binary_search([2], 3) == -1\n\ndef test_found_at_start():\n    assert binary_search([1, 3, 5, 7], 1) == 0\n\ndef test_found_in_middle():\n    assert binary_search([1, 3, 5, 7], 7) == 3\n\ndef test_found_in_end():\n    assert binary_search([1, 3, 5, 7], 3) == 1",
+        "rate": 0.944,
+        "killed": 17,
+        "mutants": 18
+      },
+      {
+        "suite": "def test_edge_case_empty_list():\n    assert binary_search([], 5) == -1\n\ndef test_single_element_found():\n    assert binary_search([2], 2) == 0\n    assert binary_search([2], 3) == -1\n\ndef test_sorted_unique_numbers():\n    assert binary_search([1, 3, 5, 7], 5) == 2\n    assert binary_search([1, 3, 5, 7], 1) == 0\n    assert binary_search([1, 3, 5, 7], 6) == -1\n    assert binary_search([1, 3, 5, 7], 8) == -1",
+        "rate": 1.0,
+        "killed": 18,
+        "mutants": 18
+      },
+      {
+        "suite": "def test_edge_case_empty_list():\n    assert binary_search([], 5) == -1\n\ndef test_single_element_match():\n    assert binary_search([2], 2) == 0\n    assert binary_search([2], 3) == -1\n\ndef test_middle_match():\n    assert binary_search([1, 3, 5, 7], 5) == 2\n    assert binary_search([1, 3, 5, 7], 1) == 0\n\ndef test_out_of_order_elements():\n    assert binary_search([7, 1, 3, 5], 3) == 2\n    assert binary_search([7, 1, 3, 5], 7) == 0",
+        "rate": 0.0,
+        "killed": null,
+        "mutants": null
+      }
+    ]
+  },
+  "roman_to_int": {
+    "base": {
+      "suite": "def test_edge_cases():\n    assert roman_to_int('I') == 1\n    assert roman_to_int('II') == 2\n    assert roman_to_int('III') == 3\n    assert roman_to_int('IV') == 4\n    assert roman_to_int('IX') == 9\n    assert roman_to_int('LVIII') == 58\n    assert roman_to_int('MCMXCIV') == 1994\n\ndef test_subtractive_notation():\n    assert roman_to_int('XL') == 40\n    assert roman_to_int('XC') == 90\n    assert roman_to_int('CD') == 400\n    assert roman_to_int('CM') == 900\n\ndef test_longest_sequence():\n    assert roman_to_int('DCXXI') == 621\n    assert roman_to_int('MMXXIII') == 2023\n\ndef test_empty_string():\n    assert roman_to_int('') == 0\n\ndef test_single_char():\n    assert roman_to_int('A') == 0  # Assuming 'A' is not a valid Roman numeral\n\n# The following should fail as they contain invalid Roman numerals\n# but the focus here is on edge cases and boundaries within the given constraints\ndef test_invalid_chars():\n    assert roman_to_int('AB') == 0  # Invalid sequence\n    assert roman_to_int('Z') == 0  # Invalid character\n    assert roman_to_int('MMMMM') == 0  # Too many M's",
+      "rate": 0.0,
+      "killed": null,
+      "mutants": null
+    },
+    "trained": {
+      "suite": "def test_case_roman_to_int():\n    assert roman_to_int('III') == 3\n\ndef test_case_roman_to_int_2():\n    assert roman_to_int('IV') == 4\n\ndef test_case_roman_to_int_3():\n    assert roman_to_int('IX') == 9\n\ndef test_case_roman_to_int_4():\n    assert roman_to_int('LVIII') == 58\n\ndef test_case_roman_to_int_5():\n    assert roman_to_int('MCMXCIV') == 1994",
+      "rate": 0.778,
+      "killed": 14,
+      "mutants": 18
+    },
+    "base_mean": 0.125,
+    "trained_mean": 0.708,
+    "all_base": [
+      {
+        "suite": "def test_edge_cases():\n    assert roman_to_int('I') == 1\n    assert roman_to_int('II') == 2\n    assert roman_to_int('III') == 3\n    assert roman_to_int('IV') == 4\n    assert roman_to_int('IX') == 9\n    assert roman_to_int('LVIII') == 58\n    assert roman_to_int('MCMXCIV') == 1994\n\ndef test_subtractive_notation():\n    assert roman_to_int('XL') == 40\n    assert roman_to_int('XC') == 90\n    assert roman_to_int('CD') == 400\n    assert roman_to_int('CM') == 900\n\ndef test_longest_sequence():\n    assert roman_to_int('DCXXI') == 621\n    assert roman_to_int('MMXXIII') == 2023\n\ndef test_empty_string():\n    assert roman_to_int('') == 0\n\ndef test_single_char():\n    assert roman_to_int('A') == 0  # Assuming 'A' is not a valid Roman numeral\n\n# The following should fail as they contain invalid Roman numerals\n# but the focus here is on edge cases and boundaries within the given constraints\ndef test_invalid_chars():\n    assert roman_to_int('AB') == 0  # Invalid sequence\n    assert roman_to_int('Z') == 0  # Invalid character\n    assert roman_to_int('MMMMM') == 0  # Too many M's",
+        "rate": 0.0,
+        "killed": null,
+        "mutants": null
+      },
+      {
+        "suite": "def test_III():\n    assert roman_to_int('III') == 3\n\ndef test_IV():\n    assert roman_to_int('IV') == 4\n\ndef test_VIIII():\n    assert roman_to_int('VIIII') == 9\n\ndef test_XLIX():\n    assert roman_to_int('XLIX') == 49\n\ndef test_CMXCIX():\n    assert roman_to_int('CMXCIX') == 999\n\ndef test_MMCMLXXXIV():\n    assert roman_to_int('MMMCMLXXXIV') == 3984\n\ndef test_ADVERSARIAL_1():\n    # This is an adversarial input that tests the boundary between IV and IIII\n    assert roman_to_int('VV') == 10\n\ndef test_ADVERSARIAL_2():\n    # This is an adversarial input that tests the boundary between IX and IIII\n    assert roman_to_int('XXXX') == 40\n\ndef test_ADVERSARIAL_3():\n    # This is an adversarial input that tests the boundary between XC and XXXX\n    assert roman_to_int('XXXXL') == 40\n\ndef test_ADVERSARIAL_4():\n    # This is an adversarial input that tests the boundary between CM and XXXXX\n    assert roman_to_int('CCCCM') == 900\n\ndef test_ADVERSARIAL_5():\n    # This is an adversarial input that tests the boundary between CD and CCC\n    assert roman_to_int('CDCCC') == 400",
+        "rate": 0.0,
+        "killed": null,
+        "mutants": null
+      },
+      {
+        "suite": "def test_I_to_III():\n    assert roman_to_int('III') == 3\n\ndef test_IV_to_4():\n    assert roman_to_int('IV') == 4\n\ndef test_VI_to_6():\n    assert roman_to_int('VI') == 6\n\ndef test_IV_to_9():\n    assert roman_to_int('IX') == 9\n\ndef test_LVIII_to_58():\n    assert roman_to_int('LVIII') == 58\n\ndef test_MCMXCIV_to_1994():\n    assert roman_to_int('MCMXCIV') == 1994\n\ndef test_X_to_10():\n    assert roman_to_int('X') == 10\n\ndef test_XL_to_40():\n    assert roman_to_int('XL') == 40\n\ndef test_CXCV_to_199():\n    assert roman_to_int('CXCV') == 199\n\ndef test_DCCCCLXXXVIII_to_888():\n    assert roman_to_int('DCCCCLXXXVIII') == 888\n\ndef test_MCMLXXXIV_to_1984():\n    assert roman_to_int('MCMLXXXIV') == 1984\n\ndef test_IM_to_anti_correct():\n    # This should fail as IM is invalid\n    assert roman_to_int('IM') != 4999\n\ndef test_MMMCMXCIX_to_3999():\n    assert roman_to_int('MMMCMXCIX') == 3999",
+        "rate": 0.0,
+        "killed": null,
+        "mutants": null
+      },
+      {
+        "suite": "def roman_to_int(s):\n    vals = {'I': 1, 'V': 5, 'X': 10, 'L': 50, 'C': 100, 'D': 500, 'M': 1000}\n    total = 0\n    for i, ch in enumerate(s):\n        v = vals[ch]\n        if i + 1 < len(s) and v < vals[s[i + 1]]:\n            total -= v\n        else:\n            total += v\n    return total\n\ndef test_case_I():\n    assert roman_to_int('III') == 3\n\ndef test_case_IV():\n    assert roman_to_int('IV') == 4\n\ndef test_case_VIII():\n    assert roman_to_int('VIII') == 8\n\ndef test_case_XI():\n    assert roman_to_int('XI') == 11\n\ndef test_case_LVIII():\n    assert roman_to_int('LVIII') == 58\n\ndef test_case_MCMXCIV():\n    assert roman_to_int('MCMXCIV') == 1994\n\ndef test_case_CXXV():\n    assert roman_to_int('CXXV') == 125\n\ndef test_case_XCIX():\n    assert roman_to_int('XCIX') == 99\n\ndef test_case_DCCCXCIX():\n    assert roman_to_int('DCCCXCIX') == 899\n\ndef test_case_CDXXII():\n    assert roman_to_int('CDXXII') == 422\n\ndef test_case_XIV():\n    assert roman_to_int('XIV') == 14\n\ndef test_case_XIX():\n    assert roman_to_int('XIX') == 19\n\ndef test_case_XCIX():\n    assert roman_to_int('XCIX') == 99\n\ndef test_case_CCLXXXIX():\n    assert roman_to_int('CCLXXXIX') == 289\n\ndef test_case_MMXIV():\n    assert roman_to_int('MMXIV') == 2014\n\ndef test_case_CCCCXCIX():\n    assert roman_to_int('CCCCXCIX') == 499\n\ndef test_case_DCCCLXXXVIII():\n    assert roman_to_int('DCCCLXXXVIII') == 888\n\ndef test_case_MCMXCIX():\n    assert roman_to_int('MCMXC",
+        "rate": 0.0,
+        "killed": null,
+        "mutants": null
+      },
+      {
+        "suite": "def test_roman_to_int():\n    assert roman_to_int('III') == 3\n    assert roman_to_int('IV') == 4\n    assert roman_to_int('IX') == 9\n    assert roman_to_int('LVIII') == 58\n    assert roman_to_int('MCMXCIV') == 1994\n    assert roman_to_int('CDXLIV') == 444\n    assert roman_to_int('DCCLXXVI') == 776\n    assert roman_to_int('MMXX') == 2020\n    assert roman_to_int('MMXXI') == 2021\n    assert roman_to_int('MMMCMXCIX') == 3999\n\n# The following are hypothetical mutants that could be injected.\n# These are just examples and would need to be varied to cover different edge cases.\ndef test_mutant_1():\n    # Mutant 1: Incorrect handling of 'IV'\n    assert roman_to_int('IV') == 5\n\ndef test_mutant_2():\n    # Mutant 2: Missing check for subtractive notation\n    assert roman_to_int('IX') == 4\n\ndef test_mutant_3():\n    # Mutant 3: Incorrect subtraction logic\n    assert roman_to_int('IX') == 8\n\ndef test_mutant_4():\n    # Mutant 4: Incorrect addition logic\n    assert roman_to_int('IV') == 1\n\ndef test_mutant_5():\n    # Mutant 5: Improper handling of 'MCMXCIV'\n    assert roman_to_int('MCMXCIV') == 1009\n\n# Note: Since we don't have actual mutants to inject, these are placeholders.\n# In practice, you would have a suite of such tests covering various scenarios and mutants.",
+        "rate": 0.0,
+        "killed": null,
+        "mutants": null
+      },
+      {
+        "suite": "def roman_to_int(s):\n    vals = {'I': 1, 'V': 5, 'X': 10, 'L': 50, 'C': 100, 'D': 500, 'M': 1000}\n    total = 0\n    for i, ch in enumerate(s):\n        v = vals[ch]\n        if i + 1 < len(s) and v < vals[s[i + 1]]:\n            total -= v\n        else:\n            total += v\n    return total\n\ndef test_case_III():\n    assert roman_to_int('III') == 3\n\ndef test_case_IV():\n    assert roman_to_int('IV') == 4\n\ndef test_case_IX():\n    assert roman_to_int('IX') == 9\n\ndef test_case_LVIII():\n    assert roman_to_int('LVIII') == 58\n\ndef test_case_MCMXCIV():\n    assert roman_to_int('MCMXCIV') == 1994\n\ndef test_case_ADVERSARIAL_1():\n    # Adversarial input: a string with only 'I' characters\n    assert roman_to_int('I'*1000) == 1000\n\ndef test_case_ADVERSARIAL_2():\n    # Adversarial input: a string with only 'V' characters followed by 'I'\n    assert roman_to_int('VIIII') == 9\n\ndef test_case_ADVERSARIAL_3():\n    # Adversarial input: a string with 'M' characters followed by 'C'\n    assert roman_to_int('MC') == 1000\n\ndef test_case_ADVERSARIAL_4():\n    # Adversarial input: a string with 'C' characters followed by 'M'\n    assert roman_to_int('CM') == 900\n\ndef test_case_ADVERSARIAL_5():\n    # Adversarial input: a string with 'X' characters followed by 'L'\n    assert roman_to_int('XL') == 40\n\ndef test_case_ADVERSARIAL_6():\n    # Adversarial input: a string with 'L' characters followed by 'X'\n    assert roman_to_int('IX') == 9\n\ndef test_case_ADVERSARIAL_7():\n    # Adversarial input: a string with 'X' characters followed by 'C'\n    assert",
+        "rate": 0.0,
+        "killed": null,
+        "mutants": null
+      },
+      {
+        "suite": "def test_roman_to_int():\n    assert roman_to_int('III') == 3\n    assert roman_to_int('IV') == 4\n    assert roman_to_int('IX') == 9\n    assert roman_to_int('LVIII') == 58\n    assert roman_to_int('MCMXCIV') == 1994\n\n    # Test for IV vs IIII\n    assert roman_to_int('IIII') == 4\n\n    # Test for IX vs VIII + I\n    assert roman_to_int('VIIII') == 9\n\n    # Test for XL vs XXXX\n    assert roman_to_int('XXXX') == 40\n\n    # Test for XC vs LXXX + X\n    assert roman_to_int('LXXXX') == 90\n\n    # Test for CD vs CCC + X\n    assert roman_to_int('CCCC') == 400\n\n    # Test for CM vs DCCC + X\n    assert roman_to_int('DCCCC') == 900\n\n    # Test for MCMXCIV vs MCMXCIII + I\n    assert roman_to_int('MCMXCIII') == 1993\n\n    print(\"All tests passed.\")\n\ntest_roman_to_int()",
+        "rate": 1.0,
+        "killed": 18,
+        "mutants": 18
+      },
+      {
+        "suite": "def test_roman_to_int():\n    assert roman_to_int('III') == 3\n    assert roman_to_int('IV') == 4\n    assert roman_to_int('IX') == 9\n    assert roman_to_int('LVIII') == 58\n    assert roman_to_int('MCMXCIV') == 1994\n    \n    # Testing edge cases\n    assert roman_to_int('M') == 1000\n    assert roman_to_int('CD') == 400\n    assert roman_to_int('CDXLIV') == 444\n    \n    # Testing invalid characters\n    try:\n        roman_to_int('INVALID')\n        assert False, \"Should raise ValueError\"\n    except ValueError:\n        pass\n    \n    # Testing subtractive notation at the start\n    assert roman_to_int('IV') == 4\n    assert roman_to_int('IX') == 9\n    assert roman_to_int('XL') == 40\n    assert roman_to_int('XC') == 90\n    assert roman_to_int('CD') == 400\n    assert roman_to_int('CM') == 900\n    \n    # Testing subtractive notation in the middle\n    assert roman_to_int('IVX') == 4\n    assert roman_to_int('IXL') == 9\n    assert roman_to_int('XCV') == 90\n    assert roman_to_int('XCX') == 91\n    assert roman_to_int('CDXLIV') == 444\n    assert roman_to_int('CDXCV') == 490\n    assert roman_to_int('CMXCIV') == 994",
+        "rate": 0.0,
+        "killed": null,
+        "mutants": null
+      },
+      {
+        "suite": "def roman_to_int(s):\n    vals = {'I': 1, 'V': 5, 'X': 10, 'L': 50, 'C': 100, 'D': 500, 'M': 1000}\n    total = 0\n    for i, ch in enumerate(s):\n        v = vals[ch]\n        if i + 1 < len(s) and v < vals[s[i + 1]]:\n            total -= v\n        else:\n            total += v\n    return total\n\ndef test_edge_cases():\n    assert roman_to_int('') == 0\n    assert roman_to_int('M') == 1000\n    assert roman_to_int('IV') == 4\n    assert roman_to_int('IX') == 9\n    assert roman_to_int('XL') == 40\n    assert roman_to_int('XC') == 90\n    assert roman_to_int('CD') == 400\n    assert roman_to_int('CM') == 900\n\ndef test_full_range():\n    assert roman_to_int('III') == 3\n    assert roman_to_int('LVIII') == 58\n    assert roman_to_int('MCMXCIV') == 1994\n\ndef test_boundary_cases():\n    assert roman_to_int('IM') == 999\n    assert roman_to_int('IC') == 99\n    assert roman_to_int('XCIX') == 99\n    assert roman_to_int('CDXCIX') == 499\n\ndef test_subtractive_notation():\n    assert roman_to_int('IV') == 4\n    assert roman_to_int('IX') == 9\n    assert roman_to_int('XL') == 40\n    assert roman_to_int('XC') == 90\n    assert roman_to_int('CD') == 400\n    assert roman_to_int('CM') == 900\n\ndef test_large_numbers():\n    assert roman_to_int('MMXXIII') == 2023\n    assert roman_to_int('MMMCMXCIX') == 3999\n\ndef test_invalid_input():\n    assert roman_to_int('INVALID') == 0",
+        "rate": 0.0,
+        "killed": null,
+        "mutants": null
+      },
+      {
+        "suite": "def test_roman_to_int():\n    assert roman_to_int('III') == 3\n    assert roman_to_int('IV') == 4\n    assert roman_to_int('IX') == 9\n    assert roman_to_int('LVIII') == 58\n    assert roman_to_int('MCMXCIV') == 1994\n    assert roman_to_int('CDXXI') == 421\n    assert roman_to_int('DCCLXXVI') == 776\n    assert roman_to_int('MMXXI') == 2021\n    assert roman_to_int('MMMM') == 4000\n    assert roman_to_int('IM') == 1000  # Edge case: invalid sequence\n    assert roman_to_int('IVX') == 9  # Edge case: invalid sequence\n    assert roman_to_int('XCIX') == 99  # Edge case: multiple IVs\n    assert roman_to_int('MCMXCIVV') == 1994  # Edge case: extra character\n\nif __name__ == \"__main__\":\n    import sys\n    from importlib import import_module\n    module_name = \"roman_to_int\"\n    if len(sys.argv) > 1:\n        module_name = sys.argv[1]\n    module = import_module(module_name)\n    test_roman_to_int()",
+        "rate": 0.0,
+        "killed": null,
+        "mutants": null
+      },
+      {
+        "suite": "def test_roman_to_int():\n    assert roman_to_int('III') == 3\n    assert roman_to_int('IV') == 4\n    assert roman_to_int('IX') == 9\n    assert roman_to_int('LVIII') == 58\n    assert roman_to_int('MCMXCIV') == 1994\n    assert roman_to_int('CDXLVIII') == 448\n    assert roman_to_int('DCCLXXVI') == 776\n    assert roman_to_int('MMXXIII') == 2023\n\n# Note: The following lines are meant to inject adversarial inputs (like 'IM' for IV-1, 'IC' for X-1)\n# which are not part of the standard Roman numeral system but could be considered for edge cases.\n# Since we don't have actual mutants to test against, these would be considered non-standard.\n# assert roman_to_int('IM') == -1  # Test invalid input\n# assert roman_to_int('IC') == -1  # Test invalid input",
+        "rate": 1.0,
+        "killed": 18,
+        "mutants": 18
+      },
+      {
+        "suite": "def test_roman_to_int():\n    # Happy path examples\n    assert roman_to_int('III') == 3\n    assert roman_to_int('IV') == 4\n    assert roman_to_int('IX') == 9\n    assert roman_to_int('LVIII') == 58\n    assert roman_to_int('MCMXCIV') == 1994\n\n    # Subtractive notation examples\n    assert roman_to_int('XL') == 40\n    assert roman_to_int('XC') == 90\n    assert roman_to_int('CD') == 400\n    assert roman_to_int('CM') == 900\n\n    # Edge case: leading zeros\n    assert roman_to_int('MXXXX') == 1000\n\n    # Large number at the end\n    assert roman_to_int('MMMM') == 4000\n\n    # Single character\n    assert roman_to_int('I') == 1\n    assert roman_to_int('V') == 5\n    assert roman_to_int('X') == 10\n    assert roman_to_int('L') == 50\n    assert roman_to_int('C') == 100\n    assert roman_to_int('D') == 500\n    assert roman_to_int('M') == 1000\n\n    # Invalid input\n    try:\n        roman_to_int('INVALID')\n    except ValueError as e:\n        assert str(e) == \"Invalid Roman numeral: INVALID\"\n    else:\n        assert False, \"Expected ValueError for invalid input\"\n\nif __name__ == \"__main__\":\n    test_roman_to_int()",
+        "rate": 0.0,
+        "killed": null,
+        "mutants": null
+      },
+      {
+        "suite": "def roman_to_int(s):\n    vals = {'I': 1, 'V': 5, 'X': 10, 'L': 50, 'C': 100, 'D': 500, 'M': 1000}\n    total = 0\n    for i, ch in enumerate(s):\n        v = vals[ch]\n        if i + 1 < len(s) and v < vals[s[i + 1]]:\n            total -= v\n        else:\n            total += v\n    return total\n\ndef test_I():\n    assert roman_to_int('I') == 1\n\ndef test_VI():\n    assert roman_to_int('VI') == 6\n\ndef test_IXI():\n    assert roman_to_int('IXI') == 10\n\ndef test_MCMXCIV():\n    assert roman_to_int('MCMXCIV') == 1994\n\ndef test_LVIII():\n    assert roman_to_int('LVIII') == 58\n\ndef test_CCCCLXXXVIII():\n    assert roman_to_int('CCCCLXXXVIII') == 488\n\ndef test_XCIX():\n    assert roman_to_int('XCIX') == 99\n\ndef test_DXLIX():\n    assert roman_to_int('DXLIX') == 449\n\ndef test_MIM():\n    # This should fail, as 'MIM' is invalid Roman numeral\n    assert roman_to_int('MIM') == 1999\n\ndef test_IVII():\n    assert roman_to_int('IVII') == 4\n\n# Additional checks to ensure subtraction works correctly\ndef test_IXIX():\n    assert roman_to_int('IXIX') == 18\n\ndef test_VIIV():\n    assert roman_to_int('VIIV') == 6\n\ndef test_LXXVIIII():\n    assert roman_to_int('LXXVIIII') == 77\n\ndef test_DCCCLXXXVIIIIX():\n    assert roman_to_int('DCCCLXXXVIIIIX') == 988",
+        "rate": 0.0,
+        "killed": null,
+        "mutants": null
+      },
+      {
+        "suite": "def roman_to_int(s):\n    vals = {'I': 1, 'V': 5, 'X': 10, 'L': 50, 'C': 100, 'D': 500, 'M': 1000}\n    total = 0\n    for i, ch in enumerate(s):\n        v = vals[ch]\n        if i + 1 < len(s) and v < vals[s[i + 1]]:\n            total -= v\n        else:\n            total += v\n    return total\n\ndef test_case_I():\n    assert roman_to_int('III') == 3\n\ndef test_case_IV():\n    assert roman_to_int('IV') == 4\n\ndef test_case_VII():\n    assert roman_to_int('VII') == 7\n\ndef test_case_IX():\n    assert roman_to_int('IX') == 9\n\ndef test_case_LVIII():\n    assert roman_to_int('LVIII') == 58\n\ndef test_case_MCMXCIV():\n    assert roman_to_int('MCMXCIV') == 1994\n\ndef test_case_edge_case_I_over_X():\n    assert roman_to_int('IC') != 1000  # This should fail, as I before C should be 10 less than C\n\ndef test_case_edge_case_X_over_L():\n    assert roman_to_int('XC') != 100  # This should fail, as X before L should be 10 less than L\n\ndef test_case_edge_case_M_over_D():\n    assert roman_to_int('IM') != 1000  # This should fail, as I before M should be 10 less than M\n\ndef test_case_edge_case_C_over_M():\n    assert roman_to_int('CM') != 100  # This should fail, as C before M should be 10 less than M\n\ndef test_case_subtractive_notation():\n    assert roman_to_int('IV') == 4\n    assert roman_to_int('IX') == 9\n    assert roman_to_int('XL') == 40\n    assert roman_to_int('XC') == 90\n    assert roman_to_int('CD') == 400\n    assert roman_to_int('CM') == 900",
+        "rate": 0.0,
+        "killed": 0,
+        "mutants": 18
+      },
+      {
+        "suite": "def roman_to_int(s):\n    vals = {'I': 1, 'V': 5, 'X': 10, 'L': 50, 'C': 100, 'D': 500, 'M': 1000}\n    total = 0\n    for i, ch in enumerate(s):\n        v = vals[ch]\n        if i + 1 < len(s) and v < vals[s[i + 1]]:\n            total -= v\n        else:\n            total += v\n    return total\n\ndef test_case_1():\n    assert roman_to_int('III') == 3\n\ndef test_case_2():\n    assert roman_to_int('IV') == 4\n\ndef test_case_3():\n    assert roman_to_int('IX') == 9\n\ndef test_case_4():\n    assert roman_to_int('LVIII') == 58\n\ndef test_case_5():\n    assert roman_to_int('MCMXCIV') == 1994\n\ndef test_subtractive_notation():\n    assert roman_to_int('XI') == 11\n    assert roman_to_int('XCIX') == 99\n    assert roman_to_int('CDXLIV') == 444\n\ndef test_edge_case_I():\n    assert roman_to_int('I') == 1\n\ndef test_edge_case_M():\n    assert roman_to_int('M') == 1000\n\ndef test_empty_string():\n    assert roman_to_int('') == 0\n\ndef test_invalid_input():\n    try:\n        roman_to_int('IIIII')\n    except ValueError:\n        pass\n    else:\n        assert False, \"Should raise ValueError for invalid input\"\n\ndef test_case_6():\n    assert roman_to_int('DCXXI') == 621\n\ndef test_case_7():\n    assert roman_to_int('MCMLXXXIV') == 1984\n\ndef test_case_8():\n    assert roman_to_int('MMXXIII') == 2023\n\ndef test_case_9():\n    assert roman_to_int('MMMM') == 4000",
+        "rate": 0.0,
+        "killed": null,
+        "mutants": null
+      },
+      {
+        "suite": "def test_roman_to_int():\n    assert roman_to_int('III') == 3\n    assert roman_to_int('IV') == 4\n    assert roman_to_int('IX') == 9\n    assert roman_to_int('LVIII') == 58\n    assert roman_to_int('MCMXCIV') == 1994\n\n    # Edge case: single numeral\n    assert roman_to_int('I') == 1\n\n    # Edge case: invalid characters\n    assert roman_to_int('IIII') == 4  # Intentionally incorrect, but should raise ValueError\n\n    # Edge case: large number\n    assert roman_to_int('MMMCMXCIX') == 3999\n\n    # Edge case: subtractive notation at the end\n    assert roman_to_int('MIM') == 1000 - 10  # Intentionally incorrect, but should raise ValueError\n\n    # Edge case: subtractive notation at the start\n    assert roman_to_int('IVM') == 5 - 10  # Intentionally incorrect, but should raise ValueError\n\n    # Boundary case: consecutive same numerals\n    assert roman_to_int('CCCC') == 400\n\n    # Boundary case: consecutive different numerals\n    assert roman_to_int('XXXX') == 40\n\n    # Adversarial case: non-standard subtractive notation\n    assert roman_to_int('CMX') == 900 - 10  # Intentionally incorrect, but should raise ValueError\n\n    # Adversarial case: invalid sequence\n    assert roman_to_int('Z') == 0  # Invalid Roman numeral, should return 0\n\n    print(\"All tests passed!\")\n\ntest_roman_to_int()",
+        "rate": 0.0,
+        "killed": null,
+        "mutants": null
+      }
+    ],
+    "all_trained": [
+      {
+        "suite": "def test_roman_to_int_I():\n    assert roman_to_int('I') == 1\n\ndef test_roman_to_int_II():\n    assert roman_to_int('II') == 2\n\ndef test_roman_to_int_III():\n    assert roman_to_int('III') == 3\n\ndef test_roman_to_int_IV():\n    assert roman_to_int('IV') == 4\n\ndef test_roman_to_int_V():\n    assert roman_to_int('V') == 5\n\ndef test_roman_to_int_VI():\n    assert roman_to_int('VI') == 6\n\ndef test_roman_to_int_VII():\n    assert roman_to_int('VII') == 7\n\ndef test_roman_to_int_VIII():\n    assert roman_to_int('VIII') == 8\n\ndef test_roman_to_int_X():\n    assert roman_to_int('X') == 10\n\ndef test_roman_to_int_XI():\n    assert roman_to_int('XI') == 11\n\ndef test_roman_to_int_XII():\n    assert roman_to_int('XII') == 12\n\ndef test_roman_to_int_XIII():\n    assert roman_to_int('XIII') == 13\n\ndef test_roman_to_int_XIV():\n    assert roman_to_int('XIV') == 14\n\ndef test_roman_to_int_XV():\n    assert roman_to_int('XV') == 15\n\ndef test_roman_to_int_XIX():\n    assert roman_to_int('XIX') == 19\n\ndef test_roman_to_int_XX():\n    assert roman_to_int('XX') == 20\n\ndef test_roman_to_int_L():\n    assert roman_to_int('L') == 50\n\ndef test_roman_to_int_LX():\n    assert roman_to_int('LX') == 60\n\ndef test_roman_to_int_C():\n    assert roman_to_int('C') == 100\n\ndef test_roman_to_int_CX():\n    assert roman_to_int('CX') == 110\n\ndef test_roman_to_int_D():\n    assert roman_to_int('D') == 500\n\ndef test_roman_to_int_M():\n    assert roman_to_int('M') == 1000\n\ndef test_roman_to_int_MCMLXXXIV():\n    assert roman_to_int('MCMLXXXIV') == 1984",
+        "rate": 1.0,
+        "killed": 18,
+        "mutants": 18
+      },
+      {
+        "suite": "def test_roman_to_int_III():\n    assert roman_to_int('III') == 3\n\ndef test_roman_to_int_IV():\n    assert roman_to_int('IV') == 4\n\ndef test_roman_to_int_VIII():\n    assert roman_to_int('VIII') == 8\n\ndef test_roman_to_int_LVIII():\n    assert roman_to_int('LVIII') == 58\n\ndef test_roman_to_int_MCMXCIV():\n    assert roman_to_int('MCMXCIV') == 1994\n\ndef test_roman_to_int_XIX():\n    assert roman_to_int('XIX') == 19\n\ndef test_roman_to_int_XIV():\n    assert roman_to_int('XIV') == 14\n\ndef test_roman_to_int_XIXC():\n    assert roman_to_int('XIXC') == 190\n\ndef test_roman_to_int_XIVII():\n    assert roman_to_int('XIVII') == 14\n\ndef test_roman_to_int_XLXXVIII():\n    assert roman_to_int('XLXXVIII') == 47\n\ndef test_roman_to_int_XIVIIII():\n    assert roman_to_int('XIVIIII') == 15",
+        "rate": 0.0,
+        "killed": null,
+        "mutants": null
+      },
+      {
+        "suite": "def test_roman_to_int():\n    assert roman_to_int('III') == 3\n    assert roman_to_int('IV') == 4\n    assert roman_to_int('IX') == 9\n    assert roman_to_int('LVIII') == 58\n    assert roman_to_int('MCMXCIV') == 1994\n    assert roman_to_int('DCCLXXVI') == 776\n\ndef test_subtractive_notation():\n    assert roman_to_int('XL') == 40\n    assert roman_to_int('XC') == 90\n    assert roman_to_int('CD') == 400\n    assert roman_to_int('CM') == 900\n\ndef test_edge_cases():\n    assert roman_to_int('M') == 1000\n    assert roman_to_int('') == 0\n    assert roman_to_int('MMXXI') == 2021",
+        "rate": 1.0,
+        "killed": 18,
+        "mutants": 18
+      },
+      {
+        "suite": "def test_roman_to_int():\n    assert roman_to_int('III') == 3\n    assert roman_to_int('IV') == 4\n    assert roman_to_int('IX') == 9\n    assert roman_to_int('LVIII') == 58\n    assert roman_to_int('MCMXCIV') == 1994\n\ndef test_subtractive_notation():\n    assert roman_to_int('MCMXC') == 1990\n    assert roman_to_int('XCIX') == 99\n\ndef test_edge_cases():\n    assert roman_to_int('IM') == 999\n    assert roman_to_int('IC') == 99\n    assert roman_to_int('CD') == 400\n\ndef test_empty_string():\n    assert roman_to_int('') == 0\n\ndef test_large_number():\n    assert roman_to_int('MMMCMXCIX') == 3999\n\ndef test_mixed_case():\n    assert roman_to_int('xVI') == 26",
+        "rate": 0.0,
+        "killed": null,
+        "mutants": null
+      },
+      {
+        "suite": "def test_roman_to_int():\n    assert roman_to_int('III') == 3\n    assert roman_to_int('IV') == 4\n    assert roman_to_int('IX') == 9\n    assert roman_to_int('LVIII') == 58\n    assert roman_to_int('MCMXCIV') == 1994\n\ndef test_roman_to_int_subtractive():\n    assert roman_to_int('CM') == 900\n    assert roman_to_int('XC') == 90\n    assert roman_to_int('XL') == 40\n    assert roman_to_int('IX') == 9\n    assert roman_to_int('IV') == 4\n\ndef test_roman_to_int_single_char():\n    assert roman_to_int('I') == 1\n    assert roman_to_int('V') == 5\n    assert roman_to_int('X') == 10\n    assert roman_to_int('L') == 50\n    assert roman_to_int('C') == 100\n    assert roman_to_int('D') == 500\n    assert roman_to_int('M') == 1000\n\ndef test_roman_to_int_long_string():\n    assert roman_to_int('DCXXI') == 621\n    assert roman_to_int('MMXVII') == 2017\n\ndef test_roman_to_int_edge_case():\n    assert roman_to_int('') == 0\n    assert roman_to_int('M') == 1000\n\ndef test_roman_to_int_adjacent_chars():\n    assert roman_to_int('IIII') == 4\n    assert roman_to_int('XXXX') == 40\n    assert roman_to_int('CCCC') == 400\n    assert roman_to_int('DD') == 400",
+        "rate": 0.0,
+        "killed": null,
+        "mutants": null
+      },
+      {
+        "suite": "def test_case_roman_to_int():\n    assert roman_to_int('III') == 3\n\ndef test_case_roman_to_int_2():\n    assert roman_to_int('IV') == 4\n\ndef test_case_roman_to_int_3():\n    assert roman_to_int('IX') == 9\n\ndef test_case_roman_to_int_4():\n    assert roman_to_int('LVIII') == 58\n\ndef test_case_roman_to_int_5():\n    assert roman_to_int('MCMXCIV') == 1994",
+        "rate": 0.778,
+        "killed": 14,
+        "mutants": 18
+      },
+      {
+        "suite": "def test_edge_cases():\n    assert roman_to_int('M') == 1000\n\ndef test_subtractive_notation():\n    assert roman_to_int('IV') == 4\n    assert roman_to_int('IX') == 9\n\ndef test_large_number():\n    assert roman_to_int('MDCLXVI') == 1666\n\ndef test_empty_string():\n    assert roman_to_int('') == 0\n\ndef test_single_digit():\n    assert roman_to_int('I') == 1\n    assert roman_to_int('V') == 5\n    assert roman_to_int('X') == 10\n    assert roman_to_int('L') == 50\n    assert roman_to_int('C') == 100\n    assert roman_to_int('D') == 500\n    assert roman_to_int('M') == 1000\n\ndef test_full_refactor():\n    assert roman_to_int('XLIX') == 49\n    assert roman_to_int('XCIX') == 99\n\ndef test_all_mutants_passed():\n    # This is a placeholder comment to indicate that all tested cases should be considered\n    assert True",
+        "rate": 1.0,
+        "killed": 18,
+        "mutants": 18
+      },
+      {
+        "suite": "def test_III():\n    assert roman_to_int('III') == 3\n\ndef test_IV():\n    assert roman_to_int('IV') == 4\n\ndef test_XIX():\n    assert roman_to_int('XIX') == 19\n\ndef test_LVIII():\n    assert roman_to_int('LVIII') == 58\n\ndef test_MCMXCIV():\n    assert roman_to_int('MCMXCIV') == 1994\n\ndef test_empty_string():\n    assert roman_to_int('') == 0\n\ndef test_single_char():\n    assert roman_to_int('M') == 1000\n\ndef test_large_number():\n    assert roman_to_int('MMMCMXCIX') == 3999",
+        "rate": 0.778,
+        "killed": 14,
+        "mutants": 18
+      },
+      {
+        "suite": "def test_roman_to_int():\n    assert roman_to_int('III') == 3\n    assert roman_to_int('IV') == 4\n    assert roman_to_int('IX') == 9\n    assert roman_to_int('LVIII') == 58\n    assert roman_to_int('MCMXCIV') == 1994\n    assert roman_to_int('CDXLVIII') == 448\n    assert roman_to_int('DCCLXXVI') == 776\n    assert roman_to_int('MMXX') == 2020\n\ndef test_subtractive_notation():\n    assert roman_to_int('XL') == 40\n    assert roman_to_int('XC') == 90\n    assert roman_to_int('CD') == 400\n    assert roman_to_int('CM') == 900\n\ndef test_corner_cases():\n    assert roman_to_int('I') == 1\n    assert roman_to_int('II') == 2\n    assert roman_to_int('III') == 3\n    assert roman_to_int('IV') == 4\n    assert roman_to_int('V') == 5\n    assert roman_to_int('VI') == 6\n    assert roman_to_int('VII') == 7\n    assert roman_to_int('VIII') == 8\n    assert roman_to_int('IX') == 9\n    assert roman_to_int('X') == 10\n\ndef test_empty_string():\n    assert roman_to_int('') == 0\n\ndef test_non_roman_chars():\n    assert roman_to_int('AB') == 0\n    assert roman_to_int('Z') == 0\n    assert roman_to_int('ABC') == 0\n\ndef test_large_number():\n    assert roman_to_int('MMDCLXXVI') == 2576",
+        "rate": 0.0,
+        "killed": null,
+        "mutants": null
+      },
+      {
+        "suite": "def test_roman_to_int():\n    assert roman_to_int('III') == 3\n    assert roman_to_int('IV') == 4\n    assert roman_to_int('IX') == 9\n    assert roman_to_int('LVIII') == 58\n    assert roman_to_int('MCMXCIV') == 1994\n\ndef test_subtractive_notation():\n    assert roman_to_int('CDXLVIII') == 448\n    assert roman_to_int('CMXCIX') == 999\n\ndef test_edge_cases():\n    assert roman_to_int('X') == 10\n    assert roman_to_int('') == 0\n\ndef test_single_char():\n    assert roman_to_int('M') == 1000\n\ndef test_large_number():\n    assert roman_to_int('DCCLXXVI') == 776",
+        "rate": 1.0,
+        "killed": 18,
+        "mutants": 18
+      },
+      {
+        "suite": "def test_roman_to_int():\n    assert roman_to_int('III') == 3\n    assert roman_to_int('IV') == 4\n    assert roman_to_int('IX') == 9\n    assert roman_to_int('LVIII') == 58\n    assert roman_to_int('MCMXCIV') == 1994\n    assert roman_to_int('CDXLVII') == 447\n    assert roman_to_int('DCCLXXXIV') == 784\n    assert roman_to_int('MMXX') == 2020\n\ntest_roman_to_int()",
+        "rate": 1.0,
+        "killed": 18,
+        "mutants": 18
+      },
+      {
+        "suite": "def test_roman_to_int():\n    assert roman_to_int('III') == 3\n    assert roman_to_int('IV') == 4\n    assert roman_to_int('IX') == 9\n    assert roman_to_int('LVIII') == 58\n    assert roman_to_int('MCMXCIV') == 1994\n    assert roman_to_int('CDXLIV') == 444\n    assert roman_to_int('DCCLXXXVIII') == 788\n    assert roman_to_int('MMXX') == 2020\n    assert roman_to_int('XCIX') == 99\n    assert roman_to_int('XM') != 1000  # Should raise ValueError due to invalid Roman numeral",
+        "rate": 1.0,
+        "killed": 18,
+        "mutants": 18
+      },
+      {
+        "suite": "def test_roman_to_int():\n    assert roman_to_int('III') == 3\n    assert roman_to_int('IV') == 4\n    assert roman_to_int('IX') == 9\n    assert roman_to_int('LVIII') == 58\n    assert roman_to_int('MCMXCIV') == 1994\n    assert roman_to_int('') == 0\n    assert roman_to_int('MMD') == 2500\n    assert roman_to_int('CDXCIX') == 499\n    assert roman_to_int('MMXX') == 2020\n    assert roman_to_int('MMMM') == 4000\n    assert roman_to_int('DCCLXXXIX') == 789\n\n# Note: The following are hypothetical mutant scenarios. Your actual suite should cover all edge cases.\n# def test_edge_case():\n#     assert roman_to_int('IM') == -1  # Invalid start of string\n\n# def test_overflow():\n#     assert roman_to_int('MMMMMM') == 6000  # Overflow test case\n\n# def test_extra_chars():\n#     assert roman_to_int('MMXXX') == 2020  # Extra characters test case",
+        "rate": 1.0,
+        "killed": 18,
+        "mutants": 18
+      },
+      {
+        "suite": "def test_roman_to_int():\n    assert roman_to_int('III') == 3\n    assert roman_to_int('IV') == 4\n    assert roman_to_int('IX') == 9\n    assert roman_to_int('LVIII') == 58\n    assert roman_to_int('MCMXCIV') == 1994\n\ndef test_subtractive_notation():\n    assert roman_to_int('XL') == 40\n    assert roman_to_int('XC') == 90\n    assert roman_to_int('CD') == 400\n    assert roman_to_int('CM') == 900\n\ndef test_edge_cases():\n    assert roman_to_int('') == 0\n    assert roman_to_int('MMMM') == 4000\n\ndef test_large_number():\n    assert roman_to_int('DCCLXXVI') == 776",
+        "rate": 1.0,
+        "killed": 18,
+        "mutants": 18
+      },
+      {
+        "suite": "def test_III():\n    assert roman_to_int('III') == 3\n\ndef test_IV():\n    assert roman_to_int('IV') == 4\n\ndef test_IV_subtractive():\n    assert roman_to_int('IX') == 9\n\ndef test_LVIII():\n    assert roman_to_int('LVIII') == 58\n\ndef test_MCMXCIV():\n    assert roman_to_int('MCMXCIV') == 1994",
+        "rate": 0.778,
+        "killed": 14,
+        "mutants": 18
+      },
+      {
+        "suite": "def test_case_I():\n    assert roman_to_int('I') == 1\n\ndef test_case_V():\n    assert roman_to_int('V') == 5\n\ndef test_case_X():\n    assert roman_to_int('X') == 10\n\ndef test_case_LVIII():\n    assert roman_to_int('LVIII') == 58\n\ndef test_case_MCMXCIV():\n    assert roman_to_int('MCMXCIV') == 1994\n\ndef test_case_IV_subtractive():\n    assert roman_to_int('IV') == 4\n\ndef test_case_IX_subtractive():\n    assert roman_to_int('IX') == 9\n\ndef test_case_LVIII_subtractive():\n    assert roman_to_int('LVIII') == 58\n\ndef test_case_MCMXCIV_subtractive():\n    assert roman_to_int('MCMXCIV') == 1994\n\ndef test_case_long_string():\n    assert roman_to_int('MMMDCCCLXXXVIII') == 3888\n\ndef test_case_empty_string():\n    assert roman_to_int('') == 0\n\ndef test_case_single_character():\n    assert roman_to_int('M') == 1000",
+        "rate": 1.0,
+        "killed": 18,
+        "mutants": 18
+      }
+    ]
+  },
+  "is_balanced": {
+    "base": {
+      "suite": "def test_empty_string():\n    assert is_balanced('')\n\ndef test_single_pair():\n    assert is_balanced('()')\n\ndef test_unbalanced_single_pair():\n    assert not is_balanced(')(')\n\ndef test_nested_unbalanced():\n    assert not is_balanced('(()')\n\ndef test_mixed_pairs():\n    assert is_balanced('{}[]()')\n\ndef test_complex_string():\n    assert not is_balanced('([]){}')\n\ndef test_corner_case():\n    assert is_balanced('{{[[(())]]}}')",
+      "rate": 0.0,
+      "killed": null,
+      "mutants": null
+    },
+    "trained": {
+      "suite": "def test_empty():\n    assert is_balanced('')\n\ndef test_single_pair():\n    assert is_balanced('()')\n\ndef test_mismatched_start_end():\n    assert not is_balanced(')(')\n\ndef test_nested_unbalanced():\n    assert not is_balanced('(()')\n\ndef test_balanced_with_whitespace():\n    assert is_balanced(' ()')",
+      "rate": 0.75,
+      "killed": 3,
+      "mutants": 4
+    },
+    "base_mean": 0.25,
+    "trained_mean": 0.734,
+    "all_base": [
+      {
+        "suite": "def test_empty_string():\n    assert is_balanced('')\n\ndef test_single_pair():\n    assert is_balanced('()')\n\ndef test_unbalanced_single_pair():\n    assert not is_balanced(')(')\n\ndef test_nested_unbalanced():\n    assert not is_balanced('(()')\n\ndef test_mixed_pairs():\n    assert is_balanced('{}[]()')\n\ndef test_complex_string():\n    assert not is_balanced('([]){}')\n\ndef test_corner_case():\n    assert is_balanced('{{[[(())]]}}')",
+        "rate": 0.0,
+        "killed": null,
+        "mutants": null
+      },
+      {
+        "suite": "def test_empty_string():\n    assert is_balanced(\"\")\n\ndef test_single_pair():\n    assert is_balanced(\"()\")\n\ndef test_mismatched_pairs():\n    assert not is_balanced(\"(]\")\n\ndef test_unmatched_openers():\n    assert not is_balanced(\"([)]\")\n\ndef test_nested_imbalance():\n    assert not is_balanced(\"(((\")\n\ndef test_edge_case_with_spaces():\n    assert is_balanced(\"() [ ]\")\n\ndef test_long_balanced_sequence():\n    assert is_balanced(\"(((((())))()))\")\n\ndef test_balanced_with_chars():\n    assert is_balanced(\"([]){[]}\")\n\ndef test_mixed_parentheses_brackets_curlybraces():\n    assert not is_balanced(\"([]){][]\")",
+        "rate": 1.0,
+        "killed": 4,
+        "mutants": 4
+      },
+      {
+        "suite": "def test_empty_string():\n    assert is_balanced('')\n\ndef test_single_pair():\n    assert is_balanced('()')\n\ndef test_unmatched_open():\n    assert not is_balanced('[')\n\ndef test_mismatched_pairs():\n    assert not is_balanced('([)]')\n\ndef test_multiple_levels():\n    assert not is_balanced('((()))')\n\ndef test_extra_closing():\n    assert not is_balanced('(()')\n\ndef test_extra_opener():\n    assert not is_balanced('())')",
+        "rate": 0.0,
+        "killed": null,
+        "mutants": null
+      },
+      {
+        "suite": "def test_empty_string():\n    assert is_balanced('')\n\ndef test_single_bracket():\n    assert is_balanced('()')\n\ndef test_unbalanced_string():\n    assert not is_balanced('([)]')\n\ndef test_extra_brackets():\n    assert not is_balanced('(((')\n\ndef test_nested_brackets():\n    assert not is_balanced('(()')\n\ndef test_sequential_balanced():\n    assert is_balanced('[]{}()')\n\ndef test_mismatched_pairs():\n    assert not is_balanced('([]){}')\n\ndef test_large_input():\n    long_string = '({[()]})'\n    assert is_balanced(long_string)\n\ndef test_corner_case():\n    corner_case = '{{{{[[[[]]]]]}}}'\n    assert is_balanced(corner_case)",
+        "rate": 0.0,
+        "killed": null,
+        "mutants": null
+      },
+      {
+        "suite": "def test_empty_string():\n    assert is_balanced('')\n\ndef test_single_pair():\n    assert is_balanced('()')\n\ndef test_single_unbalanced():\n    assert not is_balanced('[')\n\ndef test_mixed_pairs():\n    assert is_balanced('({[]})')\n\ndef test_mismatched_close_first():\n    assert not is_balanced(']')\n\ndef test_nested_mismatched():\n    assert not is_balanced('({[})')\n\ndef test_too_many_closing_brackets():\n    assert not is_balanced('((')\n\ndef test_too_many_opening_brackets():\n    assert not is_balanced(')())')\n\ndef test_adjacent_mismatched():\n    assert not is_balanced('({[]])')\n\ndef test_multiple_levels_of_balance():\n    assert is_balanced('{{[[(())]]}}')",
+        "rate": 1.0,
+        "killed": 4,
+        "mutants": 4
+      },
+      {
+        "suite": "def test_balanced():\n    assert is_balanced(\"\") == True\n\ndef test_single_pair():\n    assert is_balanced(\"()\") == True\n\ndef test_mismatched_start():\n    assert is_balanced(\"(\") == False\n\ndef test_unmatched_end():\n    assert is_balanced(\")\") == False\n\ndef test_nested():\n    assert is_balanced(\"(()\") == False\n\ndef test_full_match():\n    assert is_balanced(\"()()\") == True\n\ndef test_mixed():\n    assert is_balanced(\"[()]{}\") == True\n\ndef test_incomplete():\n    assert is_balanced(\"([)]\") == False\n\ndef test_complex():\n    assert is_balanced(\"(({{([][])}{})}}\") == True\n\ndef test_corner_case():\n    assert is_balanced(\"{[()]}\") == True",
+        "rate": 0.0,
+        "killed": null,
+        "mutants": null
+      },
+      {
+        "suite": "def test_empty_string():\n    assert is_balanced('')\n\ndef test_single_pair():\n    assert is_balanced('()')\n\ndef test_mismatched_pairs():\n    assert not is_balanced('([]]')\n\ndef test_nested_mismatch():\n    assert not is_balanced('([])[()]')\n\ndef test_unmatched_opening_bracket():\n    assert not is_balanced(')[')\n\ndef test_imbalanced_nested():\n    assert not is_balanced('(()')",
+        "rate": 0.0,
+        "killed": null,
+        "mutants": null
+      },
+      {
+        "suite": "def test_empty_string():\n    assert is_balanced(\"\")\n\ndef test_single_pair():\n    assert is_balanced(\"()\")\n\ndef test_mismatched_pairs():\n    assert not is_balanced(\"(]\")\n\ndef test_unmatched_pairs():\n    assert not is_balanced(\"([)]\")\n\ndef test_nested_pairs():\n    assert not is_balanced(\"(((\")\n\ndef test_balanced_string():\n    assert is_balanced(\"{}[]()\")\n\ndef test_adjacent_pairs():\n    assert not is_balanced(\"[()]{}{()}[]\")",
+        "rate": 0.0,
+        "killed": null,
+        "mutants": null
+      },
+      {
+        "suite": "def test_empty_string():\n    assert is_balanced('')\n\ndef test_single_pair_opening():\n    assert is_balanced('(')\n\ndef test_single_pair_closing():\n    assert not is_balanced(')')\n\ndef test_single_pair_mismatched():\n    assert not is_balanced('[')\n\ndef test_balanced_pair():\n    assert is_balanced('()')\n\ndef test_unbalanced_pair():\n    assert not is_balanced('(()')\n\ndef test_nested_balanced_pairs():\n    assert is_balanced('()()')\n\ndef test_multiple_balanced_pairs():\n    assert is_balanced('{}[]')\n\ndef test_mismatched_pairs():\n    assert not is_balanced('([]]')\n\ndef test_imbalanced_pair():\n    assert not is_balanced('([)]')\n\ndef test_edge_case_balanced():\n    assert is_balanced('{{[()]}}')\n\ndef test_edge_case_unbalanced():\n    assert not is_balanced('{{[[]]]}')",
+        "rate": 0.0,
+        "killed": null,
+        "mutants": null
+      },
+      {
+        "suite": "def test_empty_string():\n    assert is_balanced('')\n\ndef test_single_pair():\n    assert is_balanced('()')\n\ndef test_improper_single_pair():\n    assert not is_balanced('[')\n\ndef test_mixed_pairs():\n    assert is_balanced('({[]})')\n\ndef test_extra_right_bracket():\n    assert not is_balanced('([]]')\n\ndef test_nested_unbalanced():\n    assert not is_balanced('([)]')\n\ndef test_more_nested_unbalanced():\n    assert not is_balanced('((((()))'))\n\ndef test_edge_case_long_sequence():\n    assert is_balanced('()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()",
+        "rate": 0.0,
+        "killed": null,
+        "mutants": null
+      },
+      {
+        "suite": "def test_empty_string():\n    assert is_balanced(\"\")\n\ndef test_single_bracket_pair():\n    assert is_balanced(\"()\")\n\ndef test_mismatched_open_close():\n    assert not is_balanced(\"(]\")\n\ndef test_unmatched_closing():\n    assert not is_balanced(\"([)]\")\n\ndef test_nested_imbalanced():\n    assert not is_balanced(\"(((\")\n\ndef test_balanced_with_spaces():\n    assert is_balanced(\"() [{}] ()\")",
+        "rate": 1.0,
+        "killed": 4,
+        "mutants": 4
+      },
+      {
+        "suite": "def test_empty_string():\n    assert is_balanced(\"\")\n\ndef test_single_open_bracket():\n    assert is_balanced(\"(\")\n\ndef test_single_close_bracket():\n    assert not is_balanced(\")\")\n\ndef test_mismatched_pairs():\n    assert not is_balanced(\"([)]\")\n\ndef test_unmatched_open_brackets():\n    assert not is_balanced(\"((\")\n\ndef test_overlapping_pairs():\n    assert not is_balanced(\"({[()]})\")\n\ndef test_nested_pairs():\n    assert is_balanced(\"{[(])}\")\n\ndef test_balanced_string():\n    assert is_balanced(\"{}\")\n\ndef test_balanced_with_spaces():\n    assert is_balanced(\"[] {}\")\n\ndef test_balanced_with_multiple_types():\n    assert is_balanced(\"[{()}]\")",
+        "rate": 0.0,
+        "killed": null,
+        "mutants": null
+      },
+      {
+        "suite": "def test_empty_string():\n    assert is_balanced('')\n\ndef test_single_pair():\n    assert is_balanced('()')\n\ndef test_malformed_start():\n    assert not is_balanced('(')\n\ndef test_malformed_middle():\n    assert not is_balanced('([)]')\n\ndef test_malformed_end():\n    assert not is_balanced('((')\n\ndef test_malformed_sequence():\n    assert not is_balanced('([]){}')\n\ndef test_extra_characters():\n    assert is_balanced('()[]{}')",
+        "rate": 0.0,
+        "killed": null,
+        "mutants": null
+      },
+      {
+        "suite": "def test_empty_string():\n    assert is_balanced('')\n\ndef test_single_pair():\n    assert is_balanced('()')\n\ndef test_mismatched_start_end():\n    assert not is_balanced('][')\n\ndef test_unmatched_start():\n    assert not is_balanced(')[')\n\ndef test_unmatched_end():\n    assert not is_balanced('([{')\n\ndef test_nested_pairs():\n    assert is_balanced('({[]})')\n\ndef test_nested_and_mismatched():\n    assert not is_balanced('({[)]}')\n\ndef test_too_many_closing_brackets():\n    assert not is_balanced('([)]')\n\ndef test_too_many_opening_brackets():\n    assert not is_balanced('((((((((')\n\ndef test_corrected_reference_behavior():\n    # This is a placeholder and will fail if the reference implementation changes.\n    # In practice, you would have a way to re-run the reference implementation\n    # to check its correctness before running your tests.\n    pass",
+        "rate": 1.0,
+        "killed": 4,
+        "mutants": 4
+      },
+      {
+        "suite": "def test_empty_string():\n    assert is_balanced('')\n\ndef test_single_pair():\n    assert is_balanced('()')\n\ndef test_mismatched_openers():\n    assert not is_balanced('(')\n\ndef test_unmatched_closers():\n    assert not is_balanced(')')\n\ndef test_mixed_pairs():\n    assert not is_balanced('([])')\n\ndef test_extra_closers():\n    assert not is_balanced('([])[()]')\n\ndef test_nested_pairs():\n    assert is_balanced('{{[]}}')\n\ndef test_long_sequence():\n    assert is_balanced('((((({{{{{{{{{{{[{[((([])]))}))}}}}}}}}}}]}])')\n\ndef test_corner_case_long_openers():\n    assert not is_balanced('([])' * 1000 + ')')\n\ndef test_corner_case_long_closers():\n    assert not is_balanced('((' * 1000 + '))')",
+        "rate": 0.0,
+        "killed": null,
+        "mutants": null
+      },
+      {
+        "suite": "def test_empty_string():\n    assert is_balanced(\"\") == True\n\ndef test_single_pair():\n    assert is_balanced(\"()\") == True\n\ndef test_mismatched_open_close():\n    assert is_balanced(\"(]\") == False\n\ndef test_unmatched_open():\n    assert is_balanced(\"[()]\") == False\n\ndef test_nested_pairs():\n    assert is_balanced(\"([]{})\") == True\n\ndef test_multiple_levels_of_nested():\n    assert is_balanced(\"({[()]})\") == True\n\ndef test_mixed_types():\n    assert is_balanced(\"([{}])\") == True\n\ndef test_imbalanced_at_end():\n    assert is_balanced(\"([)]\") == False\n\ndef test_extra_close_bracket():\n    assert is_balanced(\"([]]\") == False\n\ndef test_edge_case_with_spaces():\n    assert is_balanced(\" ([{}] )\") == True\n\ndef test_invalid_starting_char():\n    assert is_balanced(\"{(]\") == False\n\ndef test_long_sequence():\n    assert is_balanced(\"(((((((((())))))))\")) == False",
+        "rate": 0.0,
+        "killed": null,
+        "mutants": null
+      }
+    ],
+    "all_trained": [
+      {
+        "suite": "def test_empty_string():\n    assert is_balanced('')\n\ndef test_single_pair():\n    assert is_balanced('()')\n\ndef test_unmatched_opening():\n    assert not is_balanced(']')\n\ndef test_nested_unmatched():\n    assert not is_balanced('([)]')\n\ndef test_excess_closing():\n    assert not is_balanced('((')",
+        "rate": 1.0,
+        "killed": 4,
+        "mutants": 4
+      },
+      {
+        "suite": "def test_empty_string():\n    assert is_balanced('')\n\ndef test_single_pair():\n    assert is_balanced('()')\n\ndef test_mismatched_open_close():\n    assert not is_balanced('(]')\n\ndef test_unmatched_pairs():\n    assert not is_balanced('([)]')\n\ndef test_nested_unbalanced():\n    assert not is_balanced('(((')",
+        "rate": 1.0,
+        "killed": 4,
+        "mutants": 4
+      },
+      {
+        "suite": "def test_empty_string():\n    assert is_balanced('')\n\ndef test_single_opening_bracket():\n    assert not is_balanced('(')\n\ndef test_single_closing_bracket():\n    assert not is_balanced(')')\n\ndef test_unbalanced_string():\n    assert not is_balanced('([)]')\n\ndef test_balanced_string():\n    assert is_balanced('[]')\n\ndef test_nested_balanced_string():\n    assert is_balanced('{}[]')\n\ndef test_overly_nested_balanced_string():\n    assert is_balanced('{{[[(())]]}}')",
+        "rate": 1.0,
+        "killed": 4,
+        "mutants": 4
+      },
+      {
+        "suite": "def test_empty():\n    assert is_balanced('')\n\ndef test_single_left_bracket():\n    assert not is_balanced('(')\n\ndef test_single_right_bracket():\n    assert not is_balanced(')')\n\ndef test_mismatched_pairs():\n    assert not is_balanced('({})]')\n\ndef test_extra_right_bracket():\n    assert not is_balanced('([]])')\n\ndef test_nested_pairs():\n    assert not is_balanced('([])')\n\ndef test_balanced_pairs():\n    assert is_balanced('[]')\n    assert is_balanced('{}')\n    assert is_balanced('()')\n    assert is_balanced('[{()}]')",
+        "rate": 0.0,
+        "killed": null,
+        "mutants": null
+      },
+      {
+        "suite": "def test_empty():\n    assert is_balanced('')\n\ndef test_single_pair():\n    assert is_balanced('()')\n\ndef test_mismatched_openers():\n    assert not is_balanced('([])')\n\ndef test_too_many_closing_brackets():\n    assert not is_balanced('([])[')\n\ndef test_imbalanced_closing_brackets():\n    assert not is_balanced('[[])')\n\ndef test_nested_correctly():\n    assert is_balanced('{{[[(())]]}}')\n\ndef test_unmatched_closing_bracket():\n    assert not is_balanced('({[]})')",
+        "rate": 0.0,
+        "killed": null,
+        "mutants": null
+      },
+      {
+        "suite": "def test_empty_string():\n    assert is_balanced('')\n\ndef test_single_pair():\n    assert is_balanced('()')\n\ndef test_mismatched_pairs():\n    assert not is_balanced('([)]')\n\ndef test_nested_mismatched_pairs():\n    assert not is_balanced('(((')\n\ndef test_mismatched_pair_middle():\n    assert not is_balanced('([]]')\n\ndef test_balanced_multiple_pairs():\n    assert is_balanced('{}[]()')\n\ndef test_unbalanced_multiple_pairs():\n    assert not is_balanced('{}[)')\n\ndef test_edge_case_long_sequence():\n    assert is_balanced('(((((((((())))(((((((((())')))\n\ndef test_unbalanced_long_sequence():\n    assert not is_balanced('(((((((((())))(((((((((())))))))')",
+        "rate": 0.0,
+        "killed": null,
+        "mutants": null
+      },
+      {
+        "suite": "def test_empty_string():\n    assert is_balanced('') == True\n\ndef test_single_pair():\n    assert is_balanced('()') == True\n\ndef test_mismatched_pairs():\n    assert is_balanced('([)]') == False\n\ndef test_unmatched_opening():\n    assert is_balanced('(') == False\n\ndef test_multiple_levels():\n    assert is_balanced('{{([][])}()}') == True\n\ndef test_mismatched_depths():\n    assert is_balanced('{[(])}') == False\n\ndef test_extra_closing():\n    assert is_balanced('((((((())') == False\n\ndef test_nested_imbalance():\n    assert is_balanced('([]{})') == True",
+        "rate": 1.0,
+        "killed": 4,
+        "mutants": 4
+      },
+      {
+        "suite": "def test_empty_string():\n    assert is_balanced('')\n\ndef test_single_pair():\n    assert is_balanced('()')\n\ndef test_mismatched_pairs():\n    assert not is_balanced('([]]')\n\ndef test_imbalanced_pairs():\n    assert not is_balanced('([)]')\n\ndef test_excessive_pairs():\n    assert not is_balanced('(((')\n\ndef test_balanced_pairs():\n    assert is_balanced('{}[]')",
+        "rate": 1.0,
+        "killed": 4,
+        "mutants": 4
+      },
+      {
+        "suite": "def test_empty_string():\n    assert is_balanced('')\n\ndef test_single_pair():\n    assert is_balanced('()')\n\ndef test_unmatched_opening():\n    assert not is_balanced('(')\n\ndef test_mismatched_closing():\n    assert not is_balanced(']')\n\ndef test_nested_unbalanced():\n    assert not is_balanced('(((')\n\ndef test_mixed_brackets():\n    assert not is_balanced('([]){}')\n\ndef test_balanced_with_spaces():\n    assert is_balanced('() [] {}')",
+        "rate": 0.0,
+        "killed": null,
+        "mutants": null
+      },
+      {
+        "suite": "def test_empty_string():\n    assert is_balanced('')\n\ndef test_single_pair():\n    assert is_balanced('()')\n\ndef test_mismatched_pairs():\n    assert not is_balanced('([)]')\n\ndef test_opening_only():\n    assert not is_balanced('(')\n\ndef test_unmatched_closing():\n    assert not is_balanced('([]')\n\ndef test_extra_closing():\n    assert not is_balanced('[]]')\n\ndef test_nested_mismatch():\n    assert not is_balanced('{{}')\n\ndef test_balanced_with_spaces():\n    assert is_balanced('() [] {}')",
+        "rate": 1.0,
+        "killed": 4,
+        "mutants": 4
+      },
+      {
+        "suite": "def test_empty_string():\n    assert is_balanced('')\n\ndef test_single_pair():\n    assert is_balanced('()')\n\ndef test_mismatched_opening():\n    assert not is_balanced('(')\n\ndef test_mismatched_closing():\n    assert not is_balanced(')')\n\ndef test_multiple_pairs_mismatched():\n    assert not is_balanced('([)]')\n\ndef test_nested_mismatched():\n    assert not is_balanced('(((')\n\ndef test_balanced_with_spaces():\n    assert is_balanced('() [] {}')",
+        "rate": 1.0,
+        "killed": 4,
+        "mutants": 4
+      },
+      {
+        "suite": "def test_empty_string():\n    assert is_balanced('')\n\ndef test_single_pair():\n    assert is_balanced('()')\n\ndef test_unmatched_opening():\n    assert not is_balanced(']')\n\ndef test_mismatched_pairs():\n    assert not is_balanced('([)]')\n\ndef test_excess_openers():\n    assert not is_balanced('(((')\n\ndef test_balanced_with_depth():\n    assert is_balanced('{}[]')",
+        "rate": 1.0,
+        "killed": 4,
+        "mutants": 4
+      },
+      {
+        "suite": "def test_empty_string():\n    assert is_balanced(\"\")\n\ndef test_single_pair():\n    assert is_balanced(\"()\")\n\ndef test_unmatched_close():\n    assert not is_balanced(\"(]\")\n\ndef test_mismatched_pairs():\n    assert not is_balanced(\"([)]\")\n\ndef test_excess_openers():\n    assert not is_balanced(\"(((\")\n\ndef test_nested_correctly():\n    assert is_balanced(\"{[()]}\")\n\ndef test_unmatched_openers():\n    assert not is_balanced(\"{[(])}\")\n\ndef test_balanced_with_spaces():\n    assert is_balanced(\"{{[[(())]]}}\")",
+        "rate": 1.0,
+        "killed": 4,
+        "mutants": 4
+      },
+      {
+        "suite": "def test_empty():\n    assert is_balanced('')\n\ndef test_single_pair():\n    assert is_balanced('()')\n\ndef test_mismatched_start_end():\n    assert not is_balanced(')(')\n\ndef test_nested_unbalanced():\n    assert not is_balanced('(()')\n\ndef test_balanced_with_whitespace():\n    assert is_balanced(' ()')",
+        "rate": 0.75,
+        "killed": 3,
+        "mutants": 4
+      },
+      {
+        "suite": "def test_empty_string():\n    assert is_balanced('') == True\n\ndef test_single_open_bracket():\n    assert is_balanced('(') == False\n\ndef test_single_close_bracket():\n    assert is_balanced(')') == False\n\ndef test_balanced_sequence():\n    assert is_balanced('()') == True\n\ndef test_unbalanced_sequence():\n    assert is_balanced('([)]') == False\n\ndef test_excess_open_brackets():\n    assert is_balanced('(((') == False\n\ndef test_excess_close_brackets():\n    assert is_balanced('))') == False\n\ndef test_nested_sequences():\n    assert is_balanced('({[]})') == True\n    assert is_balanced('({[}]') == False",
+        "rate": 1.0,
+        "killed": 4,
+        "mutants": 4
+      },
+      {
+        "suite": "def test_empty_string():\n    assert is_balanced('') == True\n\ndef test_single_pair():\n    assert is_balanced('()') == True\n\ndef test_unmatched_opening():\n    assert is_balanced('(') == False\n\ndef test_mismatched_pairs():\n    assert is_balanced('([)]') == False\n\ndef test_excess_closing():\n    assert is_balanced('(((') == False",
+        "rate": 1.0,
+        "killed": 4,
+        "mutants": 4
+      }
+    ]
+  }
+}

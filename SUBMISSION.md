@@ -4,7 +4,7 @@
 
 > **Thesis.** Recursive self-improvement is bottlenecked on *trustworthy verification*. As agents do more autonomous work, the binding constraint isn't generation — it's a grader you can trust. An LLM-judge reward is itself gameable, so the only durable RL signal is an **execution oracle**. We built one for test-writing, **hardened it by attacking it ourselves**, and showed the verification skill it trains **generalizes to tasks it never saw**.
 
-**One sentence:** We built an RL reward we couldn't game — we broke it ourselves with a frame‑walk exploit that faked a perfect score, fixed it so all 12 attacks now score zero — and the test‑writing skill it trains generalizes to modules it never saw (`binary_search` 0.39 → 1.00).
+**One sentence:** We built an RL reward we couldn't game — we broke it ourselves with a frame‑walk exploit that faked a perfect score, fixed it so all 12 attacks now score zero — and the test‑writing skill it trains generalizes to modules it never saw (held-out mean 0.23 → 0.79, reproducible at n=16; `binary_search` 0.31 → 0.93).
 
 **Track fit:** Agentic Collaboration (the pytest gym we present) · **wedge:** the same gym ports to chip design — Verilog testbenches where mutants become injected RTL faults and a kill is a failing assertion in simulation.
 
@@ -44,13 +44,15 @@ We trained Qwen2.5-3B with **GRPO on a single Modal A100** (LoRA r=16) on **7 mo
 
 | eval set | mean kill-rate **before → after** |
 |---|---|
-| Train (7 modules) | 0.11 → **0.91** |
-| **Held-out (3 unseen)** | 0.38 → **0.77** |
-| `binary_search` (held-out) | 0.39 → **1.00** |
+| Train (7 modules), in-training n=5 | 0.11 → **0.91** |
+| **Held-out (3 unseen) — reproducible, n=16** | **0.23 → 0.79** |
+| `binary_search` (held-out) | 0.31 → **0.93** |
+| `roman_to_int` (held-out) | 0.13 → **0.71** |
+| `is_balanced` (held-out) | 0.25 → **0.73** |
 
-The skill — *write boundary/edge-case tests that kill bugs* — **transferred to tasks it never saw**. That's the RSI thesis made concrete: you don't label outputs, you train the **grader**, and the grading generalizes. (KL ≈ 0.012; completion length 269 → 160 tokens — it learned to catch *more* bugs with *fewer* tokens, the opposite of reward-hacking by padding.) Reproduce: `modal run modal_grpo.py`. Trained adapter saved to a Modal volume.
+The skill — *write correct, boundary/edge-case tests that kill bugs* — **transferred to tasks it never saw**. That's the RSI thesis made concrete: you don't label outputs, you train the **grader**, and the grading generalizes. (KL ≈ 0.012; completion length 269 → 160 tokens — it caught *more* bugs with *fewer* tokens, the opposite of reward-hacking by padding.) Reproduce: `modal run modal_grpo.py` to train; `modal run dump_suites.py` to reload the saved adapter and re-measure.
 
-**Honest caveats** (n=5 eval, so ±~0.1): `roman_to_int` reached only **0.51** (partial transfer on the hardest module); `is_balanced` was already near-ceiling (0.75 → 0.80, little headroom). `binary_search` is the clean generalization headline.
+**How it's measured (honest):** the held-out figure is the **reproducible** one — reload the saved adapter and sample **n=16 per module** (the in-training n=5 eval agreed on the trained side: 0.38 → 0.77). The per-suite spread is real and informative: the **base** model passes the correctness gate on only ~2–5 of 16 tries — it keeps writing a *wrong* assertion the gate rejects — while the **trained** model passes on 12–15 and writes thorough suites. See the literal base-vs-trained suites in **`demo_suites.html`**.
 
 ---
 

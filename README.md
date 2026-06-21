@@ -10,7 +10,7 @@ Track fit: **Agentic Collaboration** (the pytest variant you present) with a **C
 - ✅ **Verifiable, non-gameable environment** — 10 modules, hidden mutants, automatic kill-rate reward (no LLM judge).
 - ✅ **Reproducible discrimination (no API key):** a lazy suite scores **0.62**, a thorough suite **1.0**, `assert False` → **0** (`python selftest.py`).
 - ✅ **Real models scored live through it:** Qwen3-8B **0.90**, Claude (HUD gateway) **0.60**.
-- ✅ **RL training completed, with held-out generalization** — trained Qwen2.5-3B with GRPO on a single A100 (Modal, `modal_grpo.py`) on **7 modules**, evaluated on **3 modules it never trained on**. Mean mutant-kill rate: train modules **0.11 → 0.91**, and **held-out (unseen) 0.38 → 0.77** — `binary_search` went **0.39 → 1.00** without ever being trained on. That's a *transferable* test-writing skill, not memorization (KL < 0.05; completions got shorter, not padded). See `TRAINING_STATS.md` + `grpo_result.json` + `demo_training.html`.
+- ✅ **RL training completed, with held-out generalization** — trained Qwen2.5-3B with GRPO on a single A100 (Modal, `modal_grpo.py`) on **7 modules**, evaluated on **3 modules it never trained on**. Mean mutant-kill rate: train modules **0.11 → 0.91**; **held-out (unseen) 0.23 → 0.79** — reproducible at **n=16** by reloading the saved adapter (`binary_search` **0.31 → 0.93**, `roman_to_int` 0.13 → 0.71, `is_balanced` 0.25 → 0.73). That's a *transferable* test-writing skill, not memorization (KL < 0.05; completions got shorter, not padded). The literal base-vs-trained suites are in `demo_suites.html`. See `TRAINING_STATS.md` + `grpo_result.json` + `suites_heldout.json`.
 - ✅ **Cheat-proofed reward (adversarially proven):** the suite is untrusted code, so the runner authenticates its verdict with a per-call nonce and an AST guard rejects sandbox escapes. Forging a `{"passed": true}` stdout ledger, short-circuiting with `SystemExit`, or reading the hidden mutants via frame/`__subclasses__`/`inspect` introspection **all score 0** — while legitimate suites are unaffected (`python security_checks.py`).
 
 ## The loop
@@ -41,6 +41,8 @@ Track fit: **Agentic Collaboration** (the pytest variant you present) with a **C
 | `demo.py` → `demo.html` | bug-kill-meter dashboard; reveals the **saved** base→trained before/after from `grpo_result.json` (not live inference) | new |
 | `selftest.py` | proves weak→thorough kill-rate headroom + non-gameability, **no API key** | updated |
 | `security_checks.py` | **adversarial cheat-proof**: forged-ledger / `SystemExit` / introspection / `os`·`eval` escapes all score 0; legit suite intact, **no API key** | new |
+| `dump_suites.py` → `suites_heldout.json` | inference-only Modal job: reloads the saved adapter and captures the **real** base-vs-trained suites + n=16 kill rates on held-out modules | new |
+| `demo_suites.py` → `demo_suites.html` | renders those **literal** base-vs-trained suites side by side — the witnessed before/after (not an illustration) | new |
 | `tasks.py` | the 10 modules under test for `hud eval` | updated |
 | `scorer.py` | (legacy verifier scoring; unused by this task) | unchanged |
 
