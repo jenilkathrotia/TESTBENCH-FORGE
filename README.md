@@ -6,6 +6,12 @@
 
 Track fit: **Agentic Collaboration** (the pytest variant you present) with a **Chip Design** moat (the same gym ports to Verilog testbenches — mention it, build software).
 
+## Status (what's proven, honestly)
+- ✅ **Verifiable, non-gameable environment** — 10 modules, hidden mutants, automatic kill-rate reward (no LLM judge).
+- ✅ **Reproducible discrimination (no API key):** a lazy suite scores **0.62**, a thorough suite **1.0**, `assert False` → **0** (`python selftest.py`).
+- ✅ **Real models scored live through it:** Qwen3-8B **0.90**, Claude (HUD gateway) **0.60**.
+- ✅ **RL training is wired and the GRPO mechanism is validated** — a real `hud.TrainingClient.step()` produced a checkpoint (`train_rl.py`). A full overnight run was gated by shared training-GPU capacity, so the demo **stands on the environment + real baselines and does not depend on a trained number.**
+
 ## The loop
 
 1. Agent sees a module + its **reference implementation**.

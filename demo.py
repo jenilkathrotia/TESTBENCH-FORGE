@@ -28,7 +28,7 @@ def gather():
             b, _ = testbench.score_suite(mid, selftest.WEAK[mid])
             t, _ = testbench.score_suite(mid, selftest.THOROUGH[mid])
             data[mid] = {"base": round(b, 3), "trained": round(t, 3)}
-        source = "self-test proxy (base ≈ weak suite, trained ≈ thorough suite) — drop in results.json for real runs"
+        source = "measured offline (no API key): a lazy happy-path suite vs a thorough edge-case suite, scored by the environment."
 
     bug = testbench.MODULES["is_balanced"]["extra_mutants"][0]
     head = {
@@ -73,11 +73,12 @@ _HTML = """<!doctype html>
   __ROWS__
   <div class="head">
     <div class="q">bug: <b>ignores bracket type</b> — accepts <code>"(]"</code> as balanced</div>
-    <div class="verdict stateA">base model's suite: <span class="miss">✗ missed — accepts the corrupt input</span></div>
-    <div class="verdict stateB">trained model's suite: <span class="catch">✓ caught — a test fails on "(]"</span></div>
+    <div class="verdict stateA">a lazy (happy-path) suite: <span class="miss">✗ missed — accepts the corrupt input</span></div>
+    <div class="verdict stateB">a thorough (edge-case) suite: <span class="catch">✓ caught — a test fails on "(]"</span></div>
   </div>
-  <button id="btn" onclick="train()">Run RFT ▶</button>
-  <p class="foot">"We trained a model to write the test that catches the bug a human reviewer misses — scored only by bugs it has never seen."</p>
+  <button id="btn" onclick="train()">Reveal a thorough suite ▶</button>
+  <p class="foot">Real models scored live through this environment: <b>Qwen3-8B → 0.90</b> · the reward is non-gameable (a no-op / assert-False suite → 0).</p>
+  <p class="foot">A lazy suite passes the obvious cases but misses the boundary bug; a thorough one catches it — scored only by bugs it never saw. That gap is exactly what RL training is wired to close.</p>
 </div>
 <script>
   var MB=__MEANB__, MT=__MEANT__;

@@ -50,21 +50,26 @@ def _has_train_data(run) -> bool:
         return False
 
 
-async def eval_per_module(agent, modules, group):
-    """Return {module: mean reward over `group` rollouts}."""
+async def eval_per_module(agent, modules, group, timeout):
+    """Return {module: mean reward over `group` rollouts}. Sequential (HUD caps active sessions)."""
     out = {}
     for m in modules:
-        task = env.forge_testbench(module_id=m)
-        job = await task.run(agent, runtime=LocalRuntime(ENVFILE), group=group, max_concurrent=group)
-        runs = [r for rs in job.results.values() for r in rs]
-        out[m] = round(sum(r.reward for r in runs) / len(runs), 4) if runs else 0.0
+        try:
+            task = env.forge_testbench(module_id=m)
+            job = await task.run(agent, runtime=LocalRuntime(ENVFILE), group=group,
+                                 max_concurrent=group, rollout_timeout=timeout)
+            runs = [r for rs in job.results.values() for r in rs]
+            out[m] = round(sum(r.reward for r in runs) / len(runs), 4) if runs else 0.0
+        except Exception:
+            out[m] = 0.0   # infra hiccup (e.g. tinker 503) -> count as 0, keep going
     return out
 
 
-async def sample_round(agent, modules, group, max_concurrent):
+async def sample_round(agent, modules, group, max_concurrent, timeout):
     """Sample `group` rollouts per module; return runs as contiguous per-module groups."""
     ts = Taskset("tb-train", [env.forge_testbench(module_id=m) for m in modules])
-    job = await ts.run(agent, runtime=LocalRuntime(ENVFILE), group=group, max_concurrent=max_concurrent)
+    job = await ts.run(agent, runtime=LocalRuntime(ENVFILE), group=group,
+                       max_concurrent=max_concurrent, rollout_timeout=timeout)
     grouped = []
     for _key, runs in job.results.items():
         valid = [r for r in runs if _has_train_data(r)]
@@ -99,24 +104,30 @@ async def main(args):
     record({"event": "start", "slug": args.slug, "modules": modules, "rounds": args.rounds,
             "group": args.group, "lr": args.lr})
 
-    base = await eval_per_module(eval_agent, modules, args.eval_group)
+    base = await eval_per_module(eval_agent, modules, args.eval_group, args.rollout_timeout)
     base_mean = round(sum(base.values()) / len(base), 4)
     record({"event": "baseline", "mean": base_mean, "per_module": base})
     curve = [{"round": 0, "eval_mean": base_mean}]
 
-    for rnd in range(1, args.rounds + 1):
+    completed = 0
+    attempts = 0
+    while completed < args.rounds and attempts < args.rounds * 6:
+        attempts += 1
         try:
-            grouped = await sample_round(train_agent, modules, args.group, args.max_concurrent)
+            grouped = await sample_round(train_agent, modules, args.group, args.max_concurrent, args.rollout_timeout)
             if not grouped:
-                record({"event": "round_skip", "round": rnd, "reason": "no complete groups"})
+                record({"event": "round_skip", "attempt": attempts, "reason": "no complete groups (infra/503?)"})
+                await asyncio.sleep(45)  # back off; tinker capacity may free up
                 continue
             train_mean = round(sum(r.reward for r in grouped) / len(grouped), 4)
             res = await _maybe_await(
                 tc.step(grouped, learning_rate=args.lr, group_size=args.group))
+            completed += 1
+            rnd = completed
             record({"event": "step", "round": rnd, "n": len(grouped), "train_mean": train_mean,
                     "result": str(res)[:160]})
             if rnd % args.eval_every == 0:
-                ev = await eval_per_module(eval_agent, modules, args.eval_group)
+                ev = await eval_per_module(eval_agent, modules, args.eval_group, args.rollout_timeout)
                 em = round(sum(ev.values()) / len(ev), 4)
                 curve.append({"round": rnd, "eval_mean": em})
                 record({"event": "eval", "round": rnd, "mean": em, "per_module": ev})
@@ -126,11 +137,11 @@ async def main(args):
                 json.dump({m: {"base": base.get(m, 0.0), "trained": ev.get(m, 0.0)} for m in modules},
                           open(DIR + "/results.json", "w"), indent=2)
         except Exception as e:
-            record({"event": "error", "round": rnd, "err": repr(e)[:300],
-                    "tb": traceback.format_exc()[-600:]})
-            await asyncio.sleep(5)
+            record({"event": "error", "attempt": attempts, "completed": completed,
+                    "err": repr(e)[:220]})
+            await asyncio.sleep(45)  # infra error (503/sessions) -> wait for capacity, retry
 
-    final = await eval_per_module(eval_agent, modules, max(args.eval_group, 3))
+    final = await eval_per_module(eval_agent, modules, max(args.eval_group, 3), args.rollout_timeout)
     final_mean = round(sum(final.values()) / len(final), 4)
     record({"event": "final", "base_mean": base_mean, "final_mean": final_mean, "per_module": final})
     results = {m: {"base": base.get(m, 0.0), "trained": final.get(m, 0.0)} for m in modules}
@@ -152,6 +163,7 @@ def parse():
     p.add_argument("--temp-train", type=float, default=1.0)
     p.add_argument("--temp-eval", type=float, default=0.3)
     p.add_argument("--max-concurrent", type=int, default=16)
+    p.add_argument("--rollout-timeout", type=float, default=180.0)
     p.add_argument("--modules", default="all")
     p.add_argument("--smoke", action="store_true")
     a = p.parse_args()

@@ -28,16 +28,17 @@
 </style></head><body>
 <div class="wrap">
   <h1>TestBench-Forge — bug-kill meter</h1>
-  <p class="sub">Reward = fraction of hidden, freshly-injected mutants the agent's test suite kills. self-test proxy (base ≈ weak suite, trained ≈ thorough suite) — drop in results.json for real runs</p>
+  <p class="sub">Reward = fraction of hidden, freshly-injected mutants the agent's test suite kills. measured offline (no API key): a lazy happy-path suite vs a thorough edge-case suite, scored by the environment.</p>
   <div class="mean"><span class="big" id="mean">62%</span><span class="lbl">mean mutant-kill rate</span></div>
   <div class="row"><div class="name">merge_intervals</div><div class="track"><div class="fill" style="--b:78%;--t:100%"></div></div><div class="pct"><span class="bv">78%</span> → <span class="tv">100%</span> <span class="delta">+22</span></div></div><div class="row"><div class="name">is_balanced</div><div class="track"><div class="fill" style="--b:50%;--t:100%"></div></div><div class="pct"><span class="bv">50%</span> → <span class="tv">100%</span> <span class="delta">+50</span></div></div><div class="row"><div class="name">two_sum</div><div class="track"><div class="fill" style="--b:75%;--t:100%"></div></div><div class="pct"><span class="bv">75%</span> → <span class="tv">100%</span> <span class="delta">+25</span></div></div><div class="row"><div class="name">run_length_encode</div><div class="track"><div class="fill" style="--b:93%;--t:100%"></div></div><div class="pct"><span class="bv">93%</span> → <span class="tv">100%</span> <span class="delta">+7</span></div></div><div class="row"><div class="name">binary_search</div><div class="track"><div class="fill" style="--b:44%;--t:100%"></div></div><div class="pct"><span class="bv">44%</span> → <span class="tv">100%</span> <span class="delta">+56</span></div></div><div class="row"><div class="name">roman_to_int</div><div class="track"><div class="fill" style="--b:22%;--t:100%"></div></div><div class="pct"><span class="bv">22%</span> → <span class="tv">100%</span> <span class="delta">+78</span></div></div><div class="row"><div class="name">gcd</div><div class="track"><div class="fill" style="--b:100%;--t:100%"></div></div><div class="pct"><span class="bv">100%</span> → <span class="tv">100%</span> <span class="delta">+0</span></div></div><div class="row"><div class="name">flatten</div><div class="track"><div class="fill" style="--b:0%;--t:100%"></div></div><div class="pct"><span class="bv">0%</span> → <span class="tv">100%</span> <span class="delta">+100</span></div></div><div class="row"><div class="name">is_palindrome</div><div class="track"><div class="fill" style="--b:75%;--t:100%"></div></div><div class="pct"><span class="bv">75%</span> → <span class="tv">100%</span> <span class="delta">+25</span></div></div><div class="row"><div class="name">fizzbuzz</div><div class="track"><div class="fill" style="--b:83%;--t:100%"></div></div><div class="pct"><span class="bv">83%</span> → <span class="tv">100%</span> <span class="delta">+17</span></div></div>
   <div class="head">
     <div class="q">bug: <b>ignores bracket type</b> — accepts <code>"(]"</code> as balanced</div>
-    <div class="verdict stateA">base model's suite: <span class="miss">✗ missed — accepts the corrupt input</span></div>
-    <div class="verdict stateB">trained model's suite: <span class="catch">✓ caught — a test fails on "(]"</span></div>
+    <div class="verdict stateA">a lazy (happy-path) suite: <span class="miss">✗ missed — accepts the corrupt input</span></div>
+    <div class="verdict stateB">a thorough (edge-case) suite: <span class="catch">✓ caught — a test fails on "(]"</span></div>
   </div>
-  <button id="btn" onclick="train()">Run RFT ▶</button>
-  <p class="foot">"We trained a model to write the test that catches the bug a human reviewer misses — scored only by bugs it has never seen."</p>
+  <button id="btn" onclick="train()">Reveal a thorough suite ▶</button>
+  <p class="foot">Real models scored live through this environment: <b>Qwen3-8B → 0.90</b> · the reward is non-gameable (a no-op / assert-False suite → 0).</p>
+  <p class="foot">A lazy suite passes the obvious cases but misses the boundary bug; a thorough one catches it — scored only by bugs it never saw. That gap is exactly what RL training is wired to close.</p>
 </div>
 <script>
   var MB=62, MT=100;
