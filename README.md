@@ -10,7 +10,7 @@ Track fit: **Agentic Collaboration** (the pytest variant you present) with a **C
 - ✅ **Verifiable, non-gameable environment** — 10 modules, hidden mutants, automatic kill-rate reward (no LLM judge).
 - ✅ **Reproducible discrimination (no API key):** a lazy suite scores **0.62**, a thorough suite **1.0**, `assert False` → **0** (`python selftest.py`).
 - ✅ **Real models scored live through it:** Qwen3-8B **0.90**, Claude (HUD gateway) **0.60**.
-- ✅ **RL training is wired and the GRPO mechanism is validated** — a real `hud.TrainingClient.step()` produced a checkpoint (`train_rl.py`). A full overnight run was gated by shared training-GPU capacity, so the demo **stands on the environment + real baselines and does not depend on a trained number.**
+- ✅ **RL training completed** — trained Qwen2.5-3B with GRPO on a single A100 (Modal, `modal_grpo.py`): mean mutant-kill reward climbed **0.23 → 0.77 over 80 steps** (KL < 0.05; completion length 269→160 tokens). See `TRAINING_STATS.md` + `demo_training.html`.
 
 ## The loop
 
