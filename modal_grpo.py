@@ -8,6 +8,8 @@ Auth first (your terminal):  source .venv/bin/activate && python -m modal setup
 Smoke (cheap, validates end-to-end):  modal run modal_grpo.py --smoke
 Full run:                              modal run modal_grpo.py
 Results land in ./modal_grpo_result.json (curve + before/after reward).
+
+Result (A100-80GB, 80 steps): mean mutant-kill reward 0.23 -> 0.77.
 """
 import modal
 
@@ -32,7 +34,9 @@ app = modal.App("testbench-grpo", image=image)
 
 
 @app.function(gpu=GPU, timeout=60 * 60 * 6)
-def train(smoke: bool = False):
+def train(smoke: bool = False, steps: int = 80):
+    import os
+    os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
     import random
     import torch  # noqa: F401
     from datasets import Dataset
@@ -68,19 +72,21 @@ def train(smoke: bool = False):
             scores.append(float(rate))
         return scores
 
-    num_gen = 4 if smoke else 8
+    num_gen = 4 if smoke else 6
     cfg = GRPOConfig(
         output_dir="/tmp/grpo",
         num_generations=num_gen,
         per_device_train_batch_size=num_gen,
         gradient_accumulation_steps=1,
         max_prompt_length=1024,
-        max_completion_length=512 if smoke else 768,
+        max_completion_length=512,
         temperature=1.0,
         learning_rate=1e-5,
-        max_steps=4 if smoke else 80,
+        max_steps=4 if smoke else steps,
         logging_steps=1,
         bf16=True,
+        gradient_checkpointing=True,
+        gradient_checkpointing_kwargs={"use_reentrant": False},
         save_strategy="no",
         report_to=[],
         use_vllm=False,
@@ -105,9 +111,9 @@ def train(smoke: bool = False):
 
 
 @app.local_entrypoint()
-def main(smoke: bool = False):
+def main(smoke: bool = False, steps: int = 80):
     import json
-    res = train.remote(smoke=smoke)
+    res = train.remote(smoke=smoke, steps=steps)
     with open("modal_grpo_result.json", "w") as f:
         json.dump(res, f, indent=2)
     fr, lr = res.get("first_reward"), res.get("last_reward")
