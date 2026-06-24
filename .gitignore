@@ -21,5 +21,19 @@ train_console.log
 modal_grpo_result.json
 .hud_eval.toml
 
+# Transient eval result JSON (regenerated each run; raw provider outputs are not committed).
+# The sanitized Markdown report (rft_report.md) and the tracked grpo_result.json are kept.
+fireworks_results.json
+fireworks_base*.json
+fireworks_rft*.json
+gemma*.json
+rft_eval*.json
+eval_results.json
+*_smoke.json
+
+# Local planning / loop state (local-only notes; keep portable so a teammate clone
+# without .git/info/exclude does not accidentally commit them).
+docs/plans/
+
 # OS
 .DS_Store
